@@ -1,0 +1,22 @@
+prepare:
+  sample_size: 1000
+  seed: 42
+  test_split: 0.2
+
+validation:
+  rules:
+    - check_completeness
+    - check_consistency
+    - check_format
+  confidence_threshold: 0.85
+
+model:
+  batch_size: 32
+  learning_rate: 0.001
+  epochs: 50
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  reload: true

@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  clara-ssot-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data
+      - ./models:/app/models
+      - dvc-cache:/root/.dvc/cache
+    environment:
+      - PYTHONPATH=/app
+      - DVC_REMOTE=myremote
+    command: uvicorn src.clara_ssot.api.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - clara-network
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: clara_ssot
+      POSTGRES_USER: clara_user
+      POSTGRES_PASSWORD: clara_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - clara-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - clara-network
+
+volumes:
+  dvc-cache:
+  postgres-data:
+
+networks:
+  clara-network:
+    driver: bridge

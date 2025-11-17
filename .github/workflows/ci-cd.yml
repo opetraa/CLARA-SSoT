@@ -1,0 +1,88 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: Run tests
+        run: |
+          poetry run pytest tests/ --cov=src/clara_ssot --cov-report=xml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+
+      - name: Run linters
+        run: |
+          poetry run black --check src/ tests/
+          poetry run isort --check-only src/ tests/
+          poetry run pylint src/
+
+      - name: Type checking
+        run: |
+          poetry run mypy src/
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/clara-ssot:latest
+            ${{ secrets.DOCKER_USERNAME }}/clara-ssot:${{ github.sha }}
+
+      - name: Setup DVC
+        run: |
+          pip install dvc[s3]
+          dvc remote modify --local myremote access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          dvc remote modify --local myremote secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: DVC pull
+        run: dvc pull
+
+      - name: DVC repro
+        run: dvc repro
+
+      - name: DVC push
+        run: dvc push

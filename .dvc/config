@@ -1,0 +1,12 @@
+[core]
+    remote = myremote
+    autostage = true
+
+['remote "myremote"']
+    url = s3://my-bucket/clara-ssot-data
+    # 또는 Google Drive 사용
+    # url = gdrive://folder-id
+
+[cache]
+    type = symlink
+    protected = true
