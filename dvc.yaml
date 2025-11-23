@@ -46,11 +46,9 @@ stages:
       - data/ssot
       - models/ssot_model.pkl
 
-metrics:
-  - metrics.json:
-      cache: false
 plots:
   - plots/metrics.csv:
-      cache: false
       x: iteration
       y: accuracy
+metrics:
+  - metrics.json
