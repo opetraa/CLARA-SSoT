@@ -11,10 +11,10 @@
 ## 주요 아이디어
 
 - **SSoT (Single Source of Truth)**
-  - 문서(DOC)와 용어(TERM)를 **JSON 스키마**로 강하게 정의하고,
+  - 문서(DOC)와 용어(TERM)를 **JSON 스키마**로 정의하고,
   - 이 스키마를 통과한 것만 SSoT에 저장합니다.
 
-- **Ingestion 파이프라인 한 번에 태우기**
+- **Ingestion 파이프라인**
   1. PDF 파싱 (현재는 더미)
   2. DOC Baseline 생성 + 스키마 검증
   3. Landing Zone 저장
@@ -56,3 +56,4 @@ CLARA-SSoT-main/
 │       └── problem_details.py
 └── tests/
     └── test_smoke.py
+
