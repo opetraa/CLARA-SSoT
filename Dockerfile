@@ -20,7 +20,7 @@ WORKDIR /app
 COPY pyproject.toml poetry.lock* ./
 RUN pip install poetry && \
     poetry config virtualenvs.create false && \
-    poetry install --no-dev --no-interaction --no-ansi
+    poetry install --without dev --no-interaction --no-ansi --no-root
 
 # 소스 코드 복사
 COPY src ./src

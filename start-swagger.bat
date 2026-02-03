@@ -33,7 +33,7 @@ echo.
 if %errorlevel% neq 0 (
     echo.
     echo [ERROR] Docker Compose 실행에 실패했습니다.
-    echo Docker Desktop이 실행 중인지 확인하세요.
+    echo 위 로그에서 빌드 오류 내용을 확인하세요. (Docker Desktop 실행 여부 포함)
     pause
     exit /b 1
 )
