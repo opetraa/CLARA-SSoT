@@ -48,3 +48,6 @@ line_length = 88
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 addopts = "-ra -q --cov=src/clara_ssot --cov-report=html --cov-report=term"
+markers = [
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
+]

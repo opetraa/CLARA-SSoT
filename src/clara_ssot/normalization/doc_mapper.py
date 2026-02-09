@@ -8,23 +8,32 @@ from ..parsing.pdf_parser import ParsedBlock, ParsedDocument
 
 def _blocks_to_content(blocks: List[ParsedBlock]) -> List[Dict[str, Any]]:
     """
-    ParsedBlock 리스트를 DOC Baseline의 content[] 형태로 변환.
-
-    스키마 요구사항:
-      - 각 item은 최소한 blockId, blockType, text를 가져야 한다.
-      - blockType은 enum 중 하나여야 하므로, 여기서는 "paragraph"로 고정.
-      - sectionLabel, sectionTitle 은 type: string 이라 None 넣으면 안 됨 → 모르면 아예 키를 빼버린다.
+    ParsedBlock → DOC content 변환 (bbox 포함)
     """
     content: List[Dict[str, Any]] = []
 
     for i, b in enumerate(blocks, start=1):
         item: Dict[str, Any] = {
             "blockId": f"block-{i:04d}",
-            "parentId": None,  # null 허용이라 OK
-            "blockType": "paragraph",
+            "parentId": None,
+            "blockType": b.block_type if b.block_type in [
+                "paragraph", "table", "section", "title"
+            ] else "paragraph",
             "text": b.text or "",
         }
-        # sectionLabel / sectionTitle 은 지금은 넣을 정보가 없으므로 생략
+
+        # ✨ bbox 추가 (첫 번째 문서 전략 핵심)
+        if b.bbox:
+            item["bbox"] = b.bbox.to_dict()
+
+        # ✨ 신뢰도 추가
+        if b.confidence < 1.0:
+            item["extractionConfidence"] = b.confidence
+
+        # 표 데이터
+        if b.block_type == "table" and b.table_data:
+            item["tableData"] = b.table_data
+
         content.append(item)
 
     return content

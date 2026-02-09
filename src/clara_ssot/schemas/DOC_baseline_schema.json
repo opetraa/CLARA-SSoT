@@ -16,7 +16,10 @@
       "type": "string",
       "description": "문서의 전역 고유 식별자 (UUID 또는 도메인 특화 ID)",
       "pattern": "^[a-zA-Z0-9_-]+$",
-      "examples": ["DOC-PSR-HU1-2024-001", "uuid:550e8400-e29b-41d4-a716-446655440000"]
+      "examples": [
+        "DOC-PSR-HU1-2024-001",
+        "uuid:550e8400-e29b-41d4-a716-446655440000"
+      ]
     },
     "$schema": {
       "type": "string",
@@ -27,25 +30,35 @@
       "type": "string",
       "description": "문서 스키마 버전 (Semantic Versioning)",
       "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "examples": ["1.0.0", "2.1.3"]
+      "examples": [
+        "1.0.0",
+        "2.1.3"
+      ]
     },
     "lastUpdated": {
       "type": "string",
       "format": "date-time",
       "description": "최종 수정 일시 (ISO 8601 형식)",
-      "examples": ["2024-11-14T09:30:00Z"]
+      "examples": [
+        "2024-11-14T09:30:00Z"
+      ]
     },
-
     "metadata": {
       "type": "object",
       "description": "DCMES(Dublin Core) 기반 메타데이터 - 문서 발견 및 분류를 위한 핵심 정보",
-      "required": ["dc:title", "dc:type", "dc:language"],
+      "required": [
+        "dc:title",
+        "dc:type",
+        "dc:language"
+      ],
       "properties": {
         "dc:title": {
           "type": "string",
           "description": "문서 제목",
           "minLength": 1,
-          "examples": ["한울 1호기 정기안전성평가(PSR) 보고서"]
+          "examples": [
+            "한울 1호기 정기안전성평가(PSR) 보고서"
+          ]
         },
         "dc:creator": {
           "type": "array",
@@ -53,30 +66,69 @@
           "items": {
             "type": "object",
             "properties": {
-              "name": { "type": "string" },
-              "affiliation": { "type": "string" },
-              "role": { "type": "string", "enum": ["author", "contributor", "reviewer", "approver"] },
-              "orcid": { "type": "string", "pattern": "^\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]$" }
+              "name": {
+                "type": "string"
+              },
+              "affiliation": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "author",
+                  "contributor",
+                  "reviewer",
+                  "approver"
+                ]
+              },
+              "orcid": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]$"
+              }
             },
-            "required": ["name"]
+            "required": [
+              "name"
+            ]
           }
         },
         "dc:publisher": {
           "type": "object",
           "description": "발행 주체",
           "properties": {
-            "name": { "type": "string" },
-            "organizationType": { "type": "string", "enum": ["utility", "vendor", "regulator", "research"] }
+            "name": {
+              "type": "string"
+            },
+            "organizationType": {
+              "type": "string",
+              "enum": [
+                "utility",
+                "vendor",
+                "regulator",
+                "research"
+              ]
+            }
           }
         },
         "dc:date": {
           "type": "object",
           "description": "문서 관련 날짜 정보",
           "properties": {
-            "created": { "type": "string", "format": "date" },
-            "issued": { "type": "string", "format": "date" },
-            "modified": { "type": "string", "format": "date" },
-            "valid": { "type": "string", "format": "date" }
+            "created": {
+              "type": "string",
+              "format": "date"
+            },
+            "issued": {
+              "type": "string",
+              "format": "date"
+            },
+            "modified": {
+              "type": "string",
+              "format": "date"
+            },
+            "valid": {
+              "type": "string",
+              "format": "date"
+            }
           }
         },
         "dc:type": {
@@ -101,7 +153,10 @@
         "dc:format": {
           "type": "string",
           "description": "원본 문서 형식 (MIME type)",
-          "examples": ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+          "examples": [
+            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          ]
         },
         "dc:identifier": {
           "type": "array",
@@ -109,8 +164,19 @@
           "items": {
             "type": "object",
             "properties": {
-              "scheme": { "type": "string", "enum": ["DOI", "URI", "ISBN", "ISSN", "DOCKET"] },
-              "value": { "type": "string" }
+              "scheme": {
+                "type": "string",
+                "enum": [
+                  "DOI",
+                  "URI",
+                  "ISBN",
+                  "ISSN",
+                  "DOCKET"
+                ]
+              },
+              "value": {
+                "type": "string"
+              }
             }
           }
         },
@@ -118,13 +184,24 @@
           "type": "string",
           "description": "문서 주 언어 (ISO 639-1)",
           "pattern": "^[a-z]{2}$",
-          "examples": ["ko", "en"]
+          "examples": [
+            "ko",
+            "en"
+          ]
         },
         "dc:subject": {
           "type": "array",
           "description": "주제 키워드 또는 분류",
-          "items": { "type": "string" },
-          "examples": [["피로 평가", "응력부식균열", "노화관리"]]
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "피로 평가",
+              "응력부식균열",
+              "노화관리"
+            ]
+          ]
         },
         "dc:coverage": {
           "type": "object",
@@ -133,22 +210,35 @@
             "nuclearPlant": {
               "type": "string",
               "description": "대상 원자력 발전소",
-              "examples": ["한울 1호기", "고리 3호기"]
+              "examples": [
+                "한울 1호기",
+                "고리 3호기"
+              ]
             },
             "system": {
               "type": "string",
               "description": "대상 계통 (system)",
-              "examples": ["원자로냉각재계통", "비상노심냉각계통"]
+              "examples": [
+                "원자로냉각재계통",
+                "비상노심냉각계통"
+              ]
             },
             "component": {
               "type": "string",
               "description": "대상 기기 또는 부품",
-              "examples": ["증기발생기", "원자로압력용기"]
+              "examples": [
+                "증기발생기",
+                "원자로압력용기"
+              ]
             },
             "material": {
               "type": "string",
               "description": "관련 재료",
-              "examples": ["316SS", "SA508 Gr.3", "Inconel 600"]
+              "examples": [
+                "316SS",
+                "SA508 Gr.3",
+                "Inconel 600"
+              ]
             },
             "TLAACategory": {
               "type": "string",
@@ -166,12 +256,18 @@
             "spatialCoverage": {
               "type": "string",
               "description": "공간적 범위",
-              "examples": ["Korea", "USA"]
+              "examples": [
+                "Korea",
+                "USA"
+              ]
             },
             "temporalCoverage": {
               "type": "string",
               "description": "시간적 범위",
-              "examples": ["2020-2024", "Cycle 25"]
+              "examples": [
+                "2020-2024",
+                "Cycle 25"
+              ]
             }
           }
         },
@@ -179,12 +275,21 @@
           "type": "object",
           "description": "저작권 및 접근 권한",
           "properties": {
-            "license": { "type": "string" },
+            "license": {
+              "type": "string"
+            },
             "accessRights": {
               "type": "string",
-              "enum": ["public", "restricted", "confidential", "classified"]
+              "enum": [
+                "public",
+                "restricted",
+                "confidential",
+                "classified"
+              ]
             },
-            "rightsHolder": { "type": "string" }
+            "rightsHolder": {
+              "type": "string"
+            }
           }
         },
         "dc:relation": {
@@ -193,14 +298,17 @@
           "items": {
             "type": "object",
             "properties": {
-              "relationType": { "type": "string" },
-              "targetDocumentId": { "type": "string" }
+              "relationType": {
+                "type": "string"
+              },
+              "targetDocumentId": {
+                "type": "string"
+              }
             }
           }
         }
       }
     },
-
     "provenance": {
       "type": "object",
       "description": "문서 출처 및 검증 이력 (감사성 보장)",
@@ -213,24 +321,49 @@
           "type": "object",
           "description": "원본 파일 무결성 검증",
           "properties": {
-            "algorithm": { "type": "string", "enum": ["SHA256", "MD5"] },
-            "value": { "type": "string" }
+            "algorithm": {
+              "type": "string",
+              "enum": [
+                "SHA256",
+                "MD5"
+              ]
+            },
+            "value": {
+              "type": "string"
+            }
           }
         },
         "extractionMetadata": {
           "type": "object",
           "description": "파싱 및 추출 정보",
           "properties": {
-            "parserVersion": { "type": "string" },
-            "extractionDate": { "type": "string", "format": "date-time" },
-            "ocrApplied": { "type": "boolean" },
-            "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+            "parserVersion": {
+              "type": "string"
+            },
+            "extractionDate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "ocrApplied": {
+              "type": "boolean"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
           }
         },
         "validationStatus": {
           "type": "string",
           "description": "검증 상태",
-          "enum": ["draft", "partial", "validated", "approved", "deprecated"]
+          "enum": [
+            "draft",
+            "partial",
+            "validated",
+            "approved",
+            "deprecated"
+          ]
         },
         "validationLog": {
           "type": "array",
@@ -238,10 +371,19 @@
           "items": {
             "type": "object",
             "properties": {
-              "timestamp": { "type": "string", "format": "date-time" },
-              "validator": { "type": "string" },
-              "status": { "type": "string" },
-              "comments": { "type": "string" }
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "validator": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "comments": {
+                "type": "string"
+              }
             }
           }
         },
@@ -251,32 +393,58 @@
           "items": {
             "type": "object",
             "properties": {
-              "stage": { "type": "string", "enum": ["landing", "curation", "ssot"] },
-              "timestamp": { "type": "string", "format": "date-time" },
-              "action": { "type": "string" },
-              "performer": { "type": "string" }
+              "stage": {
+                "type": "string",
+                "enum": [
+                  "landing",
+                  "curation",
+                  "ssot"
+                ]
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "type": "string"
+              },
+              "performer": {
+                "type": "string"
+              }
             }
           }
         }
       }
     },
-
     "content": {
       "type": "array",
       "description": "문서 본문 내용 - JATS 계층 구조 기반의 의미적 블록 배열",
       "items": {
         "type": "object",
-        "required": ["blockId", "blockType", "text"],
+        "required": [
+          "blockId",
+          "blockType",
+          "text"
+        ],
         "properties": {
           "blockId": {
             "type": "string",
             "description": "블록의 고유 식별자 (문서 내 상대 ID)",
-            "examples": ["block-001", "sec-2.3.1"]
+            "examples": [
+              "block-001",
+              "sec-2.3.1"
+            ]
           },
           "parentId": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "부모 블록 ID (계층 구조 표현을 위한 외래 키)",
-            "examples": ["block-000", null]
+            "examples": [
+              "block-000",
+              null
+            ]
           },
           "blockType": {
             "type": "string",
@@ -304,16 +472,60 @@
           "sectionLabel": {
             "type": "string",
             "description": "섹션 번호 또는 레이블",
-            "examples": ["1.2.3", "Appendix A"]
+            "examples": [
+              "1.2.3",
+              "Appendix A"
+            ]
           },
           "sectionTitle": {
             "type": "string",
             "description": "섹션 제목",
-            "examples": ["피로 평가 방법론"]
+            "examples": [
+              "피로 평가 방법론"
+            ]
           },
           "text": {
             "type": "string",
             "description": "블록의 텍스트 내용 (플레인 텍스트 또는 경량 마크다운)"
+          },
+          "bbox": {
+            "type": "object",
+            "description": "원본 PDF에서의 좌표 정보 (추적성 보장)",
+            "properties": {
+              "x0": {
+                "type": "number",
+                "description": "왼쪽 하단 X 좌표"
+              },
+              "y0": {
+                "type": "number",
+                "description": "왼쪽 하단 Y 좌표"
+              },
+              "x1": {
+                "type": "number",
+                "description": "오른쪽 상단 X 좌표"
+              },
+              "y1": {
+                "type": "number",
+                "description": "오른쪽 상단 Y 좌표"
+              },
+              "page": {
+                "type": "integer",
+                "description": "페이지 번호 (1-based)"
+              }
+            },
+            "required": [
+              "x0",
+              "y0",
+              "x1",
+              "y1",
+              "page"
+            ]
+          },
+          "extractionConfidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "추출 신뢰도 (TableFormer 등에서 제공)"
           },
           "structuredContent": {
             "type": "object",
@@ -339,13 +551,17 @@
             "properties": {
               "headers": {
                 "type": "array",
-                "items": { "type": "string" }
+                "items": {
+                  "type": "string"
+                }
               },
               "rows": {
                 "type": "array",
                 "items": {
                   "type": "array",
-                  "items": { "type": "string" }
+                  "items": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -354,10 +570,18 @@
             "type": "object",
             "description": "그림 데이터 (blockType이 'figure'일 때)",
             "properties": {
-              "imageUri": { "type": "string" },
-              "imageFormat": { "type": "string" },
-              "caption": { "type": "string" },
-              "alt": { "type": "string" }
+              "imageUri": {
+                "type": "string"
+              },
+              "imageFormat": {
+                "type": "string"
+              },
+              "caption": {
+                "type": "string"
+              },
+              "alt": {
+                "type": "string"
+              }
             }
           },
           "relatedTerms": {
@@ -375,17 +599,23 @@
                   "description": "용어가 언급된 문맥"
                 }
               },
-              "required": ["termId"]
+              "required": [
+                "termId"
+              ]
             }
           },
           "embeddings": {
             "type": "object",
             "description": "벡터 임베딩 (RAG용, 선택적)",
             "properties": {
-              "model": { "type": "string" },
+              "model": {
+                "type": "string"
+              },
               "vector": {
                 "type": "array",
-                "items": { "type": "number" }
+                "items": {
+                  "type": "number"
+                }
               }
             }
           },
@@ -395,26 +625,46 @@
             "items": {
               "type": "object",
               "properties": {
-                "annotator": { "type": "string" },
-                "timestamp": { "type": "string", "format": "date-time" },
-                "type": { "type": "string", "enum": ["comment", "correction", "highlight", "question"] },
-                "content": { "type": "string" }
+                "annotator": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "comment",
+                    "correction",
+                    "highlight",
+                    "question"
+                  ]
+                },
+                "content": {
+                  "type": "string"
+                }
               }
             }
           }
         }
       }
     },
-
     "relations": {
       "type": "array",
       "description": "문서 간 또는 블록 간 명시적 관계 (Knowledge Graph 엣지 생성용)",
       "items": {
         "type": "object",
-        "required": ["relationType", "target"],
+        "required": [
+          "relationType",
+          "target"
+        ],
         "properties": {
           "sourceBlockId": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "관계의 출발 블록 (null이면 문서 전체)"
           },
           "relationType": {
@@ -442,7 +692,10 @@
             "description": "대상 문서 ID 또는 외부 URI (정규화된 형식)"
           },
           "targetBlockId": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "대상 블록 ID (특정 블록 참조 시)"
           },
           "citationText": {
@@ -458,7 +711,6 @@
         }
       }
     },
-
     "qualityMetrics": {
       "type": "object",
       "description": "데이터 품질 메트릭 (Data-Centric AI)",
@@ -483,14 +735,21 @@
           "type": "object",
           "description": "기술적 정확성 평가",
           "properties": {
-            "reviewedBy": { "type": "string" },
-            "score": { "type": "number", "minimum": 0, "maximum": 1 },
-            "comments": { "type": "string" }
+            "reviewedBy": {
+              "type": "string"
+            },
+            "score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "comments": {
+              "type": "string"
+            }
           }
         }
       }
     },
-
     "regulatoryCompliance": {
       "type": "object",
       "description": "규제 준수 정보 (EU AI Act, US NRC, UK ONR 등)",
@@ -500,35 +759,63 @@
           "items": {
             "type": "object",
             "properties": {
-              "framework": { "type": "string", "enum": ["EU_AI_Act", "US_NRC", "UK_ONR", "CNSC", "IAEA"] },
-              "article": { "type": "string" },
-              "complianceStatus": { "type": "string", "enum": ["compliant", "partial", "non-compliant", "not-applicable"] }
+              "framework": {
+                "type": "string",
+                "enum": [
+                  "EU_AI_Act",
+                  "US_NRC",
+                  "UK_ONR",
+                  "CNSC",
+                  "IAEA"
+                ]
+              },
+              "article": {
+                "type": "string"
+              },
+              "complianceStatus": {
+                "type": "string",
+                "enum": [
+                  "compliant",
+                  "partial",
+                  "non-compliant",
+                  "not-applicable"
+                ]
+              }
             }
           }
         },
         "riskLevel": {
           "type": "string",
           "description": "EU AI Act 기준 위험 수준",
-          "enum": ["minimal", "limited", "high", "unacceptable"]
+          "enum": [
+            "minimal",
+            "limited",
+            "high",
+            "unacceptable"
+          ]
         },
         "transparencyRequirements": {
           "type": "object",
           "description": "투명성 요구사항 충족",
           "properties": {
-            "technicalDocumentation": { "type": "boolean" },
-            "dataGovernance": { "type": "boolean" },
-            "traceability": { "type": "boolean" }
+            "technicalDocumentation": {
+              "type": "boolean"
+            },
+            "dataGovernance": {
+              "type": "boolean"
+            },
+            "traceability": {
+              "type": "boolean"
+            }
           }
         }
       }
     },
-
     "extensions": {
       "type": "object",
       "description": "도메인 특화 확장 필드 (유연성 제공)",
       "additionalProperties": true
     }
   },
-
   "additionalProperties": false
 }

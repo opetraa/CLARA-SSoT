@@ -1,0 +1,30 @@
+[
+  {
+    "type": "term_entry",
+    "termId": "term:amp",
+    "term": "AMP",
+    "lang": "bilingual",
+    "headword_en": "AMP",
+    "headword_ko": "",
+    "definition_en": "[PENDING_DEFINITION]",
+    "definition_ko": "경년열화 관리 프로그램",
+    "slots": {
+      "context_ko": ""
+    },
+    "examples": [],
+    "negatives": [],
+    "domain": [
+      "nuclear"
+    ],
+    "relatedTerms": [],
+    "relations": [],
+    "taxonomyBindings": [],
+    "provenance": {
+      "source": {
+        "docId": "DOC_e5a95bd9ad0b4fdf930450e4772be46f"
+      },
+      "curationStatus": "candidate",
+      "trace_id": "1c8c99c70b494e5390d099925862ad3b"
+    }
+  }
+]

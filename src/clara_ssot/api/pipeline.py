@@ -1,4 +1,5 @@
 # src/clara_ssot/api/pipeline.py
+import os
 from pathlib import Path
 from typing import Any, Dict
 
@@ -26,7 +27,11 @@ def ingest_single_document(pdf_path: Path) -> Dict[str, Any]:
       5) TERM 병합 + 승격 가능 TERM 필터링 + TERM SSoT 저장
       6) 요약 결과 반환
     """
-    # 1) Parsing
+
+    # LLM API 키 가져오기
+    llm_api_key = os.getenv("ANTHROPIC_API_KEY") or os.getenv("OPENAI_API_KEY")
+
+    # 1) Parsing (이제 Docling+PyMuPDF 사용!)
     parsed = parse_pdf(pdf_path)
 
     # 2) DOC baseline + 스키마 검증
@@ -39,19 +44,20 @@ def ingest_single_document(pdf_path: Path) -> Dict[str, Any]:
     doc_id = save_doc_landing(doc_baseline)
     upsert_doc_ssot(doc_baseline)
 
-    # 4) TERM 후보 생성 + Landing
-    term_candidates = extract_term_candidates(parsed)
-    term_baseline_candidates = build_term_baseline_candidates(doc_id, term_candidates)
+    # 4) TERM 후보 생성 (이제 LLM 사용!)
+    term_candidates = extract_term_candidates(parsed, llm_api_key=llm_api_key)
+    term_baseline_candidates = build_term_baseline_candidates(
+        doc_id, term_candidates)
     save_term_candidates_landing(doc_id, term_baseline_candidates)
 
-    # 5) TERM 병합 + 승격 대상 필터링
+    # 5) TERM 병합 + 승격
     merged_terms = merge_term_candidates(term_baseline_candidates)
     promotable, term_problems = filter_promotable_terms(merged_terms)
 
     if promotable:
         upsert_term_ssot(promotable)
 
-    # 6) 클라이언트에 돌려줄 요약 결과
+    # 6) 클라이언트에게 돌려줄 결과
     return {
         "documentId": doc_id,
         "promotedTermCount": len(promotable),
