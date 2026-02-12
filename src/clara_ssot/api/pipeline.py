@@ -1,4 +1,5 @@
 # src/clara_ssot/api/pipeline.py
+import logging
 import os
 from pathlib import Path
 from typing import Any, Dict
@@ -16,6 +17,8 @@ from ..ssot.term_ssot_repository import upsert_terms as upsert_term_ssot
 from ..validation.json_schema_validator import schema_registry
 from ..validation.term_validator import filter_promotable_terms
 
+logger = logging.getLogger(__name__)
+
 
 def ingest_single_document(pdf_path: Path) -> Dict[str, Any]:
     """
@@ -29,8 +32,14 @@ def ingest_single_document(pdf_path: Path) -> Dict[str, Any]:
     """
 
     # LLM API 키 가져오기
-    llm_api_key = os.getenv("GOOGLE_API_KEY") or os.getenv(
+    llm_api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY") or os.getenv(
         "ANTHROPIC_API_KEY") or os.getenv("OPENAI_API_KEY")
+
+    warnings = []
+    if not llm_api_key:
+        msg = "⚠️ No LLM API Key found. Term extraction will likely return empty results."
+        logger.warning(msg)
+        warnings.append(msg)
 
     # 1) Parsing (이제 Docling+PyMuPDF 사용!)
     parsed = parse_pdf(pdf_path)
@@ -46,7 +55,13 @@ def ingest_single_document(pdf_path: Path) -> Dict[str, Any]:
     upsert_doc_ssot(doc_baseline)
 
     # 4) TERM 후보 생성 (이제 LLM 사용!)
+    logger.info("🚀 Starting TERM extraction (after DOC creation)...")
     term_candidates = extract_term_candidates(parsed, llm_api_key=llm_api_key)
+    logger.info(f"🔍 Extracted {len(term_candidates or [])} term candidates.")
+
+    if not term_candidates and llm_api_key:
+        warnings.append("LLM API Key was present, but 0 terms were extracted.")
+
     term_baseline_candidates = build_term_baseline_candidates(
         doc_id, term_candidates)
     save_term_candidates_landing(doc_id, term_baseline_candidates)
@@ -63,4 +78,5 @@ def ingest_single_document(pdf_path: Path) -> Dict[str, Any]:
         "documentId": doc_id,
         "promotedTermCount": len(promotable),
         "termValidationProblems": [p.dict() for p in term_problems],
+        "warnings": warnings,
     }

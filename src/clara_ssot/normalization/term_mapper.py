@@ -193,10 +193,16 @@ def extract_term_candidates(
         if block.text and len(block.text) > 50
     ]
 
+    if not text_chunks:
+        logger.warning(
+            "⚠️ No text chunks > 50 chars found in document. Term extraction skipped.")
+
     # LLM 추출
     extractor = LLMTermExtractor(api_key=llm_api_key)
     # 더 많은 용어를 찾기 위해 청크 수 증가 (테스트용 10개)
-    candidates = extractor.extract(text_chunks[:10])
+    chunks_to_process = text_chunks[:10]
+    logger.info(f"Sending {len(chunks_to_process)} text chunks to LLM...")
+    candidates = extractor.extract(chunks_to_process)
 
     logger.info(f"Extracted {len(candidates)} TERM candidates")
     return candidates
