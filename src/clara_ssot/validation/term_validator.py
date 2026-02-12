@@ -18,6 +18,43 @@ REQUIRED_FIELD_HINTS: Dict[str, Dict[str, Any]] = {
 }
 
 
+def determine_term_status(term: Dict[str, Any]) -> str:
+    """
+    TERM의 신뢰도(x축)와 완성도(y축)를 기반으로 상태(Status)를 결정합니다.
+
+    Returns:
+        'candidate' | 'anchored' | 'mature' | 'rejected'
+    """
+    # 0. 이미 Rejected 상태라면 유지
+    if term.get("status") == "rejected":
+        return "rejected"
+
+    # 1. 신뢰도 체크 (x축)
+    # 전문가 검증이 되었거나, 신뢰할 수 있는 소스에서 온 경우
+    quality = term.get("qualityMetrics", {})
+    is_trusted = quality.get("expertValidated", False)
+
+    # (확장 가능) provenance 정보를 통해 신뢰도 판단 로직 추가 가능
+    # if term.get("provenance", {}).get("sourceType") == "glossary": is_trusted = True
+
+    # 2. 완성도 체크 (y축)
+    # 필수 필드가 모두 채워졌는지 확인
+    missing_fields = []
+    for field in REQUIRED_FIELDS:
+        val = term.get(field)
+        if not val or (isinstance(val, str) and val.startswith("[PENDING")):
+            missing_fields.append(field)
+    is_complete = len(missing_fields) == 0
+
+    # 3. 상태 결정 매트릭스
+    if is_trusted and is_complete:
+        return "mature"   # M: 신뢰도 높음 + 완성도 높음
+    elif is_trusted:
+        return "anchored"  # A: 신뢰도 높음 + 완성도 낮음 (ID 확정, 참조 가능)
+    else:
+        return "candidate"  # C: 신뢰도 낮음 (LLM 추출 단계)
+
+
 def filter_promotable_terms(
     merged_terms: List[Dict[str, Any]]
 ) -> tuple[List[Dict[str, Any]], List[ProblemDetails]]:

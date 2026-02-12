@@ -31,13 +31,15 @@
       }
     }
   },
-  "postCreateCommand": "pip install poetry && poetry install && pip install dvc[s3,gs,azure,ssh,gdrive] black isort pylint pytest pytest-cov pytest-asyncio pre-commit",
+  "postCreateCommand": "sudo apt-get update || true && sudo apt-get install -y libgl1 && pip install poetry && poetry install && pip install dvc[s3,gs,azure,ssh,gdrive] black isort pylint pytest pytest-cov pytest-asyncio pre-commit",
   "remoteUser": "vscode",
   "mounts": [
     "source=clara-ssot-dvc-cache,target=/home/vscode/.dvc/cache,type=volume"
   ],
   "runArgs": [
-    "--network=host"
+    "--network=host",
+    "--env-file",
+    ".env"
   ],
   "forwardPorts": [
     8000,

@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List
 import logging
+import uuid
 
 import instructor
 import google.generativeai as genai
@@ -182,7 +183,7 @@ def build_term_baseline_candidates(
     term_jsons: List[Dict[str, Any]] = []
 
     for c in candidates:
-        term_id = f"term:{c.term.lower()}"
+        term_id = str(uuid.uuid4())
         term_json = {
             "type": "term_entry",
             "termId": term_id,
@@ -202,10 +203,11 @@ def build_term_baseline_candidates(
             "relations": [],
             "taxonomyBindings": [],
             "provenance": {
-                "source": {"docId": doc_baseline_id},
+                "sources": [{"docId": doc_baseline_id}],
                 "curationStatus": "candidate",
                 "trace_id": get_trace_id(),
             },
+            "status": "candidate",
         }
         term_jsons.append(term_json)
 

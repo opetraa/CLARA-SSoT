@@ -3,7 +3,7 @@ M ?= chore: sync changes
 
 .PHONY: help install test lint format clean run run-ui docker-build docker-up docker-down \
         dvc-repro dvc-push dvc-pull dvc-status git-push git-pull \
-        dvc-add-push sync-all 
+        dvc-add-push sync-all ingest
 FILE ?=
 
 help:
@@ -108,3 +108,26 @@ git-push:
 git-pull:
 	@git pull
 	@echo "✅ 원격 저장소의 최신 변경사항을 가져왔습니다."
+
+# 1. 뒤에 오는 인자들을 변수로 캡처합니다.
+# 'ingest'를 제외한 나머지 단어들을 가져옵니다.
+ARGS = $(filter-out $@,$(MAKECMDGOALS))
+
+ingest:
+	@# 만약 인자가 없으면 기본 파일을 사용하고, 있으면 그 파일을 사용합니다.
+	@INPUT="$(if $(ARGS),$(ARGS),data/sample.pdf)"; \
+	if [ -f "$$INPUT" ]; then \
+		FILENAME="$$INPUT"; \
+	elif [ -f "data/$$INPUT" ]; then \
+		FILENAME="data/$$INPUT"; \
+	else \
+		echo "❌ Error: File '$$INPUT' not found (checked ./ and ./data/)."; \
+		exit 1; \
+	fi; \
+	echo "🚀 Ingesting $$FILENAME to localhost:8000..."; \
+	curl -X POST "http://localhost:8000/ingest" -F "file=@$$FILENAME" || \
+	(echo "" && echo "⚠️  Connection refused. Please run 'make run' in another terminal to start the API server." && exit 1)
+
+# 2. 뒤에 오는 인자들이 '존재하지 않는 명령어'라고 에러가 나지 않게 방지합니다.
+%:
+	@:

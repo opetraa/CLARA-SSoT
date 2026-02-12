@@ -15,52 +15,77 @@
     "type": {
       "type": "string",
       "description": "엔트리 종류",
-      "enum": ["term_entry"],
+      "enum": [
+        "term_entry"
+      ],
       "default": "term_entry"
     },
     "termId": {
       "type": "string",
       "description": "용어의 전역 고유 식별자 (기본 키). UUID 또는 정규화된 이름 형식",
-      "pattern": "^term[:.][a-zA-Z0-9_-]+(\\.v\\d+\\.\\d+)?$",
-      "examples": ["term:amp", "term.AMP.v1.1", "term:stress-corrosion-cracking"]
+      "pattern": "^(term[:.][a-zA-Z0-9_-]+(\\.v\\d+\\.\\d+)?|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+      "examples": [
+        "term:amp",
+        "term.AMP.v1.1",
+        "term:stress-corrosion-cracking",
+        "550e8400-e29b-41d4-a716-446655440000"
+      ]
     },
     "term": {
       "type": "string",
       "description": "대표 표기 (약어 또는 주 용어명)",
       "minLength": 1,
-      "examples": ["AMP", "SCC", "PSR", "TLAA"]
+      "examples": [
+        "AMP",
+        "SCC",
+        "PSR",
+        "TLAA"
+      ]
     },
     "lang": {
       "type": "string",
       "description": "용어의 언어 범위",
-      "enum": ["en", "ko", "bilingual"],
-      "examples": ["bilingual"]
+      "enum": [
+        "en",
+        "ko",
+        "bilingual"
+      ],
+      "examples": [
+        "bilingual"
+      ]
     },
-
     "headword_en": {
       "type": "string",
       "description": "영문 표제어 (정식 명칭 또는 풀네임)",
-      "examples": ["Aging Management Program", "Stress Corrosion Cracking"]
+      "examples": [
+        "Aging Management Program",
+        "Stress Corrosion Cracking"
+      ]
     },
     "headword_ko": {
       "type": "string",
       "description": "한글 표제어 (정식 명칭 또는 풀네임)",
-      "examples": ["경년열화 관리 프로그램", "응력부식균열"]
+      "examples": [
+        "경년열화 관리 프로그램",
+        "응력부식균열"
+      ]
     },
-
     "definition_en": {
       "type": "string",
       "description": "영문 정의 (교과서적 정의, 검색·요약·툴팁에 직접 사용)",
       "minLength": 10,
-      "examples": ["A systematic, documented program to monitor, evaluate, and control age-related degradation of structures, systems, and components."]
+      "examples": [
+        "A systematic, documented program to monitor, evaluate, and control age-related degradation of structures, systems, and components."
+      ]
     },
     "definition_ko": {
       "type": "string",
       "description": "한글 정의 (교과서적 정의, 검색·요약·툴팁에 직접 사용)",
       "minLength": 10,
-      "examples": ["구조물·계통·기기의 경년열화를 체계적으로 모니터링·평가·관리하여 설계수명 및 계속운전 기간 동안 본래의 안전·성능 기능을 유지하도록 하는 문서화된 관리 프로그램."]
+      "examples": [
+        "구조물·계통·기기의 경년열화를 체계적으로 모니터링·평가·관리하여 설계수명 및 계속운전 기간 동안 본래의 안전·성능 기능을 유지하도록 하는 문서화된 관리 프로그램."
+      ]
     },
-
     "slots": {
       "type": "object",
       "description": "표적 개념의 ontological context를 반영하는 핵심 데이터. 개념-관계-개념 형태의 링크 세트 및 개념의 의미를 반영하는 사실 집합 (인지 프레임)",
@@ -84,24 +109,48 @@
         "components_en": {
           "type": "array",
           "description": "영문 구성요소 - 프로그램/개념을 이루는 기능 블록 리스트",
-          "items": { "type": "string" },
-          "examples": [["inspection", "monitoring", "evaluation", "maintenance", "corrective actions"]]
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "inspection",
+              "monitoring",
+              "evaluation",
+              "maintenance",
+              "corrective actions"
+            ]
+          ]
         },
         "components_ko": {
           "type": "array",
           "description": "한글 구성요소 - 프로그램/개념을 이루는 기능 블록 리스트",
-          "items": { "type": "string" },
-          "examples": [["검사", "모니터링", "평가", "유지보수", "시정조치"]]
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "검사",
+              "모니터링",
+              "평가",
+              "유지보수",
+              "시정조치"
+            ]
+          ]
         },
         "lifecycle_en": {
           "type": "string",
           "description": "영문 라이프사이클 - 화살표(→) 또는 > 로 단계 흐름 기술",
-          "examples": ["Plan → Implement → Monitor → Evaluate → Correct → Update"]
+          "examples": [
+            "Plan → Implement → Monitor → Evaluate → Correct → Update"
+          ]
         },
         "lifecycle_ko": {
           "type": "string",
           "description": "한글 라이프사이클 - 화살표(→) 또는 > 로 단계 흐름 기술",
-          "examples": ["계획 → 실행 → 모니터링 → 평가 → 시정 → 업데이트"]
+          "examples": [
+            "계획 → 실행 → 모니터링 → 평가 → 시정 → 업데이트"
+          ]
         },
         "mechanism_en": {
           "type": "string",
@@ -146,7 +195,6 @@
       },
       "additionalProperties": true
     },
-
     "examples": {
       "type": "array",
       "description": "사용 예문 (영/한) - 사용 맥락/패턴 학습 + 답변 예시 생성에 도움",
@@ -162,40 +210,54 @@
             "description": "한글 예문"
           }
         },
-        "required": ["en", "ko"]
+        "required": [
+          "en",
+          "ko"
+        ]
       },
-      "examples": [[
-        {
-          "en": "The plant updated its AMP for buried piping.",
-          "ko": "발전소는 매설 배관 AMP를 개정했다."
-        }
-      ]]
+      "examples": [
+        [
+          {
+            "en": "The plant updated its AMP for buried piping.",
+            "ko": "발전소는 매설 배관 AMP를 개정했다."
+          }
+        ]
+      ]
     },
-
     "synonyms": {
       "type": "object",
       "description": "동의어 (영/한) - 사용자 질의 정규화용",
       "properties": {
         "en": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "영문 동의어 목록"
         },
         "ko": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "한글 동의어 목록"
         }
       }
     },
-
     "negatives": {
       "type": "array",
       "description": "약어 충돌 방지용 부정 키워드 - 같은 철자지만 다른 의미(예: AMP=웹 Accelerated Mobile Pages, 생화학 Adenosine monophosphate) 배제. 부정 키워드가 포함된 문서는 validator를 통과할 수 없으므로 HITL(Human-in-the-Loop)을 통해 보충",
-      "items": { "type": "string" },
-      "examples": [["Accelerated Mobile Pages", "Adenosine monophosphate", "Asset Management Plan"]]
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        [
+          "Accelerated Mobile Pages",
+          "Adenosine monophosphate",
+          "Asset Management Plan"
+        ]
+      ]
     },
-
     "domain": {
       "type": "array",
       "description": "도메인 태그 - 검색 필터/부스팅에 활용",
@@ -219,22 +281,38 @@
           "other"
         ]
       },
-      "examples": [["nuclear", "LTO", "safety"]]
+      "examples": [
+        [
+          "nuclear",
+          "LTO",
+          "safety"
+        ]
+      ]
     },
-
     "relatedTerms": {
       "type": "array",
       "description": "연관 용어 (키워드/약어) - KG로 관계 연결 (예: AMP ↔ AMR, TLAA)",
-      "items": { "type": "string" },
-      "examples": [["AMR", "TLAA", "LTO", "PSR"]]
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        [
+          "AMR",
+          "TLAA",
+          "LTO",
+          "PSR"
+        ]
+      ]
     },
-
     "relations": {
       "type": "array",
       "description": "SKOS(분류체계 지식 표준) 및 온톨로지 관계 규칙 반영. EU AI Act Article 11, 12의 기술 문서화 및 추적성을 반영한 설계",
       "items": {
         "type": "object",
-        "required": ["relationType", "target"],
+        "required": [
+          "relationType",
+          "target"
+        ],
         "properties": {
           "relationType": {
             "type": "string",
@@ -253,12 +331,20 @@
               "onto:requires",
               "onto:implements"
             ],
-            "examples": ["skos:related", "onto:is_a", "onto:has_part"]
+            "examples": [
+              "skos:related",
+              "onto:is_a",
+              "onto:has_part"
+            ]
           },
           "target": {
             "type": "string",
             "description": "대상 TERM 엔트리의 termId (외래 키)",
-            "examples": ["term:amr", "term.Program", "term:inspection"]
+            "examples": [
+              "term:amr",
+              "term.Program",
+              "term:inspection"
+            ]
           },
           "source": {
             "type": "array",
@@ -275,7 +361,9 @@
                   "description": "출처 블록의 blockId"
                 }
               },
-              "required": ["docId"]
+              "required": [
+                "docId"
+              ]
             }
           },
           "note": {
@@ -291,23 +379,34 @@
         }
       }
     },
-
     "taxonomyBindings": {
       "type": "array",
       "description": "TERM의 분류체계를 DOC에 binding. Self-Query Retriever를 위한 제어 어휘 연결",
       "items": {
         "type": "object",
-        "required": ["dimension", "code"],
+        "required": [
+          "dimension",
+          "code"
+        ],
         "properties": {
           "dimension": {
             "type": "string",
             "description": "DOC 스키마에 정의된 메타데이터 차원 (예: metadata.dc:coverage.TLAACategory)",
-            "examples": ["TLAACategory", "programType", "material", "system"]
+            "examples": [
+              "TLAACategory",
+              "programType",
+              "material",
+              "system"
+            ]
           },
           "code": {
             "type": "string",
             "description": "dimension 안에 실제로 들어가는 값",
-            "examples": ["AMP", "피로", "316SS"]
+            "examples": [
+              "AMP",
+              "피로",
+              "316SS"
+            ]
           },
           "description_en": {
             "type": "string",
@@ -320,7 +419,6 @@
         }
       }
     },
-
     "provenance": {
       "type": "object",
       "description": "용어 출처 및 큐레이션 이력 (감사성 보장)",
@@ -345,7 +443,11 @@
               },
               "extractionMethod": {
                 "type": "string",
-                "enum": ["manual", "automated", "hybrid"],
+                "enum": [
+                  "manual",
+                  "automated",
+                  "hybrid"
+                ],
                 "description": "추출 방법"
               },
               "extractionDate": {
@@ -362,10 +464,18 @@
           "items": {
             "type": "object",
             "properties": {
-              "timestamp": { "type": "string", "format": "date-time" },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
               "stage": {
                 "type": "string",
-                "enum": ["landing", "curation", "validation", "ssot"]
+                "enum": [
+                  "landing",
+                  "curation",
+                  "validation",
+                  "ssot"
+                ]
               },
               "action": {
                 "type": "string",
@@ -375,7 +485,9 @@
                 "type": "string",
                 "description": "작업 수행자 (사람 또는 시스템)"
               },
-              "comments": { "type": "string" }
+              "comments": {
+                "type": "string"
+              }
             }
           }
         },
@@ -387,17 +499,23 @@
             "properties": {
               "mergedFrom": {
                 "type": "array",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "description": "병합된 후보 ID 목록"
               },
-              "mergeDate": { "type": "string", "format": "date-time" },
-              "mergeReason": { "type": "string" }
+              "mergeDate": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "mergeReason": {
+                "type": "string"
+              }
             }
           }
         }
       }
     },
-
     "vocabularyEdit": {
       "type": "object",
       "description": "Vocabulary Edit 정보 - LLM 토크나이저에 추가할 스페셜 토큰 정의",
@@ -405,12 +523,18 @@
         "specialToken": {
           "type": "string",
           "description": "토크나이저에 추가할 토큰 (예: <AMP>)",
-          "examples": ["<AMP>", "<SCC>", "<PSR>"]
+          "examples": [
+            "<AMP>",
+            "<SCC>",
+            "<PSR>"
+          ]
         },
         "tokenizationRule": {
           "type": "string",
           "description": "토큰화 규칙 (예: 약어 뒤에 괄호로 풀네임 강제)",
-          "examples": ["AMP (Aging Management Program)"]
+          "examples": [
+            "AMP (Aging Management Program)"
+          ]
         },
         "embeddingUpdate": {
           "type": "boolean",
@@ -419,7 +543,6 @@
         }
       }
     },
-
     "qualityMetrics": {
       "type": "object",
       "description": "용어 품질 메트릭 (Data-Centric AI)",
@@ -453,32 +576,40 @@
         }
       }
     },
-
     "version": {
       "type": "string",
       "description": "용어 엔트리 버전 (Semantic Versioning)",
       "pattern": "^\\d+\\.\\d+$",
-      "examples": ["1.0", "1.1", "2.0"]
+      "examples": [
+        "1.0",
+        "1.1",
+        "2.0"
+      ]
     },
     "lastUpdated": {
       "type": "string",
       "format": "date-time",
       "description": "최종 수정 일시 (ISO 8601)",
-      "examples": ["2025-11-13T00:00:00Z"]
+      "examples": [
+        "2025-11-13T00:00:00Z"
+      ]
     },
     "status": {
       "type": "string",
-      "description": "용어 상태 (DVC/git으로 관리하되 status는 HITL로 결정)",
-      "enum": ["candidate", "partial", "active", "deprecated", "obsolete"],
+      "description": "용어 상태 (신뢰도와 완성도에 따른 구분: Candidate=후보, Anchored=신뢰확보, Mature=완성, Rejected=반려)",
+      "enum": [
+        "candidate",
+        "anchored",
+        "mature",
+        "rejected"
+      ],
       "default": "candidate"
     },
-
     "extensions": {
       "type": "object",
       "description": "도메인 특화 확장 필드 (유연성 제공)",
       "additionalProperties": true
     }
   },
-
   "additionalProperties": false
 }
