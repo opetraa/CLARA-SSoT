@@ -1,0 +1,33 @@
+{
+  "type": "term_entry",
+  "termId": "c5910724-6227-440d-b09a-ebaaca575f54",
+  "term": "NTIS",
+  "lang": "bilingual",
+  "headword_en": "National Technical Information Service",
+  "headword_ko": "미국 국립기술정보국",
+  "definition_en": "A central resource for government-funded scientific, technical, engineering, and business-related information available to the public in the United States.",
+  "definition_ko": "미국 상무부 산하의 기관으로, 정부가 자금을 지원한 과학, 기술, 공학 및 비즈니스 관련 정보를 수집하여 대중에게 제공하는 중앙 정보 서비스 기관.",
+  "slots": {
+    "context_ko": "The National Technical Information Service Springfield, VA 22161-0002 <http://www.ntis.gov/ordernow> 703-487-4650"
+  },
+  "examples": [],
+  "negatives": [],
+  "domain": [
+    "information science",
+    "engineering",
+    "government agency"
+  ],
+  "relatedTerms": [],
+  "relations": [],
+  "taxonomyBindings": [],
+  "provenance": {
+    "sources": [
+      {
+        "docId": "DOC_f0e9bae9304f4f9db34b5c0c48f62cf9"
+      }
+    ],
+    "curationStatus": "candidate",
+    "trace_id": "d863d3d355944ceebe65869c40f700d1"
+  },
+  "status": "candidate"
+}

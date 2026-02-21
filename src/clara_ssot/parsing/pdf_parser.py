@@ -1,8 +1,13 @@
 # src/clara_ssot/parsing/pdf_parser.py
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 import logging
+import os
+import re
+import uuid
+import io
+from PIL import Image
 
 # PyMuPDF 임포트
 import pymupdf
@@ -37,6 +42,11 @@ class ParsedBlock:
     bbox: Optional[BoundingBox] = None
     table_data: Optional[Dict] = None
     confidence: float = 1.0
+    # 계층 구조 및 메타데이터 상속 필드 추가
+    level: int = 999  # 0: Title, 1: Section, ... 999: Paragraph
+    context_path: List[str] = field(default_factory=list)
+    parent_id: Optional[str] = None
+    block_id: Optional[str] = None
 
 
 @dataclass
@@ -48,136 +58,247 @@ class ParsedDocument:
 
 class PyMuPDFParser:
     """
-    Docling(AI 파서)을 사용할 수 없는 환경(CUDA 에러 등)에서
-    기본적인 텍스트 추출을 수행하는 Fallback 파서
+    기본 파서: 텍스트 기반 PDF 처리 (빠름, 정확, 무료)
+    스택 기반 알고리즘으로 문서의 계층 구조(Hierarchy)를 복원하고 메타데이터를 상속함.
     """
 
     def parse(self, pdf_path: Path) -> ParsedDocument:
         doc = pymupdf.open(pdf_path)
         blocks = []
 
+        # 계층 구조 추적을 위한 스택
+        # 구조: {'level': int, 'id': str, 'title': str}
+        context_stack = []
+
         for page_index, page in enumerate(doc):
-            # get_text("blocks") returns list of (x0, y0, x1, y1, "lines", block_no, block_type)
-            raw_blocks = page.get_text("blocks")
+            # 폰트 정보를 얻기 위해 "dict" 모드 사용
+            page_dict = page.get_text("dict")
 
-            for b in raw_blocks:
-                x0, y0, x1, y1, text, block_no, block_type = b
-
-                # block_type 0 is text, 1 is image
-                if block_type != 0 or not text.strip():
+            for block in page_dict.get("blocks", []):
+                if block["type"] != 0:  # 0: text, 1: image
                     continue
 
+                # 블록 내 텍스트 병합 및 스타일 대표값 추출
+                block_text_parts = []
+                max_font_size = 0.0
+                is_bold = False
+
+                for line in block["lines"]:
+                    for span in line["spans"]:
+                        block_text_parts.append(span["text"])
+                        if span["size"] > max_font_size:
+                            max_font_size = span["size"]
+                        # PyMuPDF flags: 2^4 (16) is bold
+                        if span["flags"] & 16:
+                            is_bold = True
+
+                clean_text = " ".join(block_text_parts).strip()
+                if not clean_text:
+                    continue
+
+                # 1. 레벨 및 타입 판별 (Rule-based Decision)
+                level, inferred_type = self._determine_structure(
+                    clean_text, max_font_size, is_bold)
+                block_id = str(uuid.uuid4())
+
+                # 2. 스택 조정 (Pop): 현재 레벨보다 깊거나 같은 이전 섹션 닫기
+                if inferred_type in ["title", "section"]:
+                    while context_stack and context_stack[-1]['level'] >= level:
+                        context_stack.pop()
+
+                # 3. 부모 연결 및 컨텍스트 상속
+                parent_id = context_stack[-1]['id'] if context_stack else None
+                current_context_path = [item['title']
+                                        for item in context_stack]
+
+                # 4. 블록 생성
                 blocks.append(ParsedBlock(
                     page=page_index + 1,
-                    block_type="paragraph",
-                    text=text.strip(),
-                    bbox=BoundingBox(x0=x0, y0=y0, x1=x1,
-                                     y1=y1, page=page_index + 1),
-                    confidence=0.5  # Rule-based라 신뢰도는 낮게 설정
+                    block_type=inferred_type,
+                    text=clean_text,
+                    bbox=BoundingBox(
+                        x0=block["bbox"][0], y0=block["bbox"][1],
+                        x1=block["bbox"][2], y1=block["bbox"][3],
+                        page=page_index + 1
+                    ),
+                    confidence=1.0,
+                    level=level,
+                    context_path=current_context_path,
+                    parent_id=parent_id,
+                    block_id=block_id
                 ))
+
+                # 5. 스택 푸시 (Push): 섹션인 경우 스택에 추가하여 하위 블록의 부모가 됨
+                if inferred_type in ["title", "section"]:
+                    context_stack.append({
+                        'level': level,
+                        'id': block_id,
+                        'title': clean_text
+                    })
 
         doc.close()
 
         return ParsedDocument(
             source_path=str(pdf_path),
             blocks=blocks,
-            metadata={"parser": "pymupdf_fallback", "version": "1.0.0"}
+            metadata={"parser": "pymupdf_stack", "version": "2.0.0"}
         )
+
+    def _determine_structure(self, text: str, font_size: float, is_bold: bool) -> Tuple[int, str]:
+        """텍스트 패턴과 폰트 스타일로 레벨과 타입을 결정"""
+        # 1. 목차/제목 (Level 0) - 정규식 강화
+        if re.match(r'^\s*(목\s*차|table of contents|contents)\s*$', text, re.IGNORECASE):
+            return 0, "title"
+
+        # 2. 섹션 번호 패턴 (Level 1~N)
+        # 예: "1. 서론" -> Level 1, "1.1 배경" -> Level 2, "1.1.1 상세" -> Level 3
+        match = re.match(r'^(\d+(?:\.\d+)*)\.?\s+', text)
+        if match:
+            depth = match.group(1).count('.') + 1
+            return depth, "section"
+
+        # 3. 폰트 기반 헤더 추론 (번호가 없는 대제목)
+        # 일반 본문보다 크고(예: >12pt) Bold인 경우
+        if font_size > 12 and is_bold:
+            return 1, "section"
+
+        # 4. 일반 본문
+        return 999, "paragraph"
 
 
 class DoclingParser:
-    """Docling 기반 파서 (표 + 레이아웃 전문)"""
+    """
+    메인 파서: Docling 기반 (표 + 레이아웃 + 계층 구조 전문)
+    Docling의 구조 분석 능력을 활용하여 context_path를 자동으로 생성함.
+    """
 
     def __init__(self):
-        # 0) 필수 의존성 체크 (Torch)
+        # Docling Lazy Import (의존성 없을 시 Fallback 유도)
         try:
-            import torch  # noqa: F401
-        except ImportError as e:
-            # CUDA 라이브러리 누락 에러 핸들링 (libcusparse.so.12 등)
-            if "libcusparse.so" in str(e) or "libcublas.so" in str(e):
-                msg = (
-                    "❌ PyTorch CUDA 라이브러리 로드 실패 (libcusparse/libcublas).\n"
-                    "현재 환경에 GPU 라이브러리가 없거나 호환되지 않습니다.\n"
-                    "CPU 환경이라면 다음 명령어로 PyTorch를 CPU 버전으로 재설치하세요:\n"
-                    "👉 pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu --force-reinstall"
-                )
-                logger.error(msg)
-                raise ImportError(msg) from e
-
-            msg = "PyTorch(torch)가 설치되지 않았습니다. 'make install'을 실행하여 의존성을 설치해주세요."
-            logger.error(msg)
-            raise ImportError(msg) from e
-
-        # Docling Lazy Import (CUDA 라이브러리 에러 방지)
-        try:
-            from docling.document_converter import DocumentConverter
+            from docling.document_converter import DocumentConverter, PdfFormatOption
             from docling.datamodel.base_models import InputFormat
+            from docling.datamodel.pipeline_options import (
+                PdfPipelineOptions,
+                AcceleratorOptions,
+                AcceleratorDevice,
+            )
+            import torch
+
+            # GPU 가용성 체크 및 디바이스 설정
+            if torch.cuda.is_available():
+                logger.info(
+                    f"🚀 GPU detected (CUDA: {torch.cuda.get_device_name(0)}). Using CUDA for Docling.")
+                device = AcceleratorDevice.CUDA
+            elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+                logger.info(
+                    "🚀 GPU detected (Apple MPS). Using MPS for Docling.")
+                # Docling 버전에 따라 MPS 상수가 없을 수 있으므로 안전하게 처리
+                device = getattr(AcceleratorDevice, "MPS",
+                                 AcceleratorDevice.CPU)
+            else:
+                logger.info(
+                    "ℹ️ GPU not detected (CUDA/MPS unavailable). Using CPU for Docling.")
+                device = AcceleratorDevice.CPU
+
+            # 파이프라인 옵션 구성
+            pipeline_options = PdfPipelineOptions()
+            pipeline_options.accelerator_options = AcceleratorOptions(
+                num_threads=4, device=device
+            )
+
+            self.converter = DocumentConverter(
+                format_options={InputFormat.PDF: PdfFormatOption(
+                    pipeline_options=pipeline_options)}
+            )
+
+            # 표 구조 추출 활성화 (OpenCV 필요)
+            try:
+                import cv2  # noqa: F401
+                self.converter.format_to_options[InputFormat.PDF].pipeline_options.do_table_structure = True
+            except ImportError:
+                logger.warning("OpenCV(cv2) 없음. 표 구조 추출 기능이 제한될 수 있습니다.")
+                self.converter.format_to_options[InputFormat.PDF].pipeline_options.do_table_structure = False
+
         except ImportError as e:
-            # CUDA 라이브러리 누락 에러 핸들링 (libcusparse.so.12 등)
-            if "libcusparse.so" in str(e) or "libcublas.so" in str(e):
-                msg = (
-                    "❌ PyTorch CUDA 라이브러리 로드 실패 (libcusparse/libcublas).\n"
-                    "현재 환경에 GPU 라이브러리가 없거나 호환되지 않습니다.\n"
-                    "CPU 환경이라면 다음 명령어로 PyTorch를 CPU 버전으로 재설치하세요:\n"
-                    "👉 pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu --force-reinstall"
-                )
-                logger.error(msg)
-                raise ImportError(msg) from e
-            raise e
-
-        # TableFormer 활성화 옵션
-        self.converter = DocumentConverter()
-
-        # 기본적으로 표 구조 추출은 끄고 시작 (안전 모드)
-        self.converter.format_to_options[InputFormat.PDF].pipeline_options.do_table_structure = False
-
-        # OpenCV(libGL) 종속성 체크: 환경에 라이브러리가 없으면 표 추출 비활성화
-        try:
-            import cv2  # noqa: F401
-            self.converter.format_to_options[InputFormat.PDF].pipeline_options.do_table_structure = True
-        except ImportError:
-            logger.warning(
-                "OpenCV(cv2) 로드 실패. libGL.so.1 누락으로 인해 표 구조 추출(TableFormer)을 비활성화합니다.")
+            raise ImportError(f"Docling 라이브러리가 설치되지 않았습니다: {e}")
 
     def parse(self, pdf_path: Path) -> ParsedDocument:
-        """Docling으로 PDF 파싱"""
         result = self.converter.convert(pdf_path)
         doc = result.document
-
         blocks = []
 
-        # DoclingDocument 순회
+        # 계층 구조 추적을 위한 스택
+        context_stack = []
+
+        # Docling은 iterate_items()에서 (item, level)을 반환함
+        # level: 0(Title), 1(H1), 2(H2)...
         for item, level in doc.iterate_items():
-            # Docling v2 item has label (Enum), not type. Converting to string for comparison.
             label = str(getattr(item, "label", "")).lower()
+            text = getattr(item, "text", "").strip()
 
-            # 텍스트 블록
-            if any(x in label for x in ["text", "header", "paragraph", "title", "list_item", "caption", "footnote", "form"]):
-                bbox = self._extract_bbox(item)
-                page = item.prov[0].page_no if hasattr(
-                    item, "prov") and item.prov else 1
-                blocks.append(ParsedBlock(
-                    page=page,
-                    block_type="paragraph",
-                    text=getattr(item, "text", ""),
-                    bbox=bbox,
-                    confidence=1.0
-                ))
+            if not text and "table" not in label:
+                continue
 
-            # 표 블록
+            # 1. 타입 매핑
+            block_type = "paragraph"
+            if "title" in label:
+                block_type = "title"
+            elif "header" in label:
+                block_type = "section"
             elif "table" in label:
-                bbox = self._extract_bbox(item)
-                table_data = self._extract_table_data(item)
-                page = item.prov[0].page_no if hasattr(
-                    item, "prov") and item.prov else 1
-                blocks.append(ParsedBlock(
-                    page=page,
-                    block_type="table",
-                    text=self._table_to_markdown(table_data),
-                    bbox=bbox,
-                    table_data=table_data,
-                    confidence=0.979  # TableFormer 평균
-                ))
+                block_type = "table"
+            elif "list" in label:
+                block_type = "list"
+
+            # 2. 스택 조정 (Pop): 현재 레벨보다 깊거나 같은 상위 섹션 닫기
+            # Docling level이 None인 경우(본문 등)는 스택 유지
+            if block_type in ["title", "section"] and level is not None:
+                while context_stack and context_stack[-1]['level'] >= level:
+                    context_stack.pop()
+
+            # 3. 부모 연결 및 컨텍스트 상속
+            parent_id = context_stack[-1]['id'] if context_stack else None
+            current_context_path = [item['title'] for item in context_stack]
+            block_id = str(uuid.uuid4())
+
+            # 4. 블록 데이터 구성
+            bbox = self._extract_bbox(item)
+
+            parsed_block = ParsedBlock(
+                page=item.prov[0].page_no if hasattr(
+                    item, "prov") and item.prov else 1,
+                block_type=block_type,
+                text=text,
+                bbox=bbox,
+                confidence=1.0,
+                level=level if level is not None else 999,
+                context_path=current_context_path,
+                parent_id=parent_id,
+                block_id=block_id
+            )
+
+            # 표 데이터 처리
+            if block_type == "table" and hasattr(item, "export_to_dataframe"):
+                try:
+                    df = item.export_to_dataframe()
+                    parsed_block.table_data = {
+                        "headers": [str(h) for h in df.columns.tolist()],
+                        "rows": [[str(c) for c in row] for row in df.values.tolist()]
+                    }
+                    # 텍스트 필드에는 마크다운 형태 저장
+                    parsed_block.text = df.to_markdown(index=False)
+                except Exception:
+                    pass
+
+            blocks.append(parsed_block)
+
+            # 5. 스택 푸시 (Push): 섹션인 경우 스택에 추가
+            if block_type in ["title", "section"] and level is not None:
+                context_stack.append({
+                    'level': level,
+                    'id': block_id,
+                    'title': text
+                })
 
         return ParsedDocument(
             source_path=str(pdf_path),
@@ -186,8 +307,6 @@ class DoclingParser:
         )
 
     def _extract_bbox(self, item) -> Optional[BoundingBox]:
-        """Docling item에서 bbox 추출"""
-        # v2: prov list contains bbox
         if hasattr(item, "prov") and item.prov:
             p = item.prov[0]
             b = p.bbox
@@ -199,100 +318,113 @@ class DoclingParser:
             )
         return None
 
-    def _extract_table_data(self, table_item) -> Dict:
-        """표 데이터 추출"""
-        # Docling v2: export_to_dataframe() 사용
-        if hasattr(table_item, "export_to_dataframe"):
-            try:
-                df = table_item.export_to_dataframe()
-                return {
-                    "headers": [str(h) for h in df.columns.tolist()],
-                    "rows": [[str(c) for c in row] for row in df.values.tolist()]
-                }
-            except Exception as e:
-                logger.warning(f"Table export failed: {e}")
 
-        return {"headers": [], "rows": []}
+class GeminiVisionParser:
+    """
+    백업 파서: 스캔된 문서나 복잡한 표 처리를 위한 VLM (Vision-Language Model)
+    Gemini 1.5 Flash를 사용하여 이미지에서 구조화된 데이터를 추출
+    """
 
-    def _table_to_markdown(self, table_data: Dict) -> str:
-        """표를 마크다운으로 변환"""
-        if not table_data.get("rows"):
-            return "[Empty Table]"
+    def __init__(self, api_key: str = None):
+        from google import genai
 
-        md = []
-        if table_data.get("headers"):
-            md.append("| " + " | ".join(table_data["headers"]) + " |")
-            md.append("| " + " | ".join(["---"] *
-                      len(table_data["headers"])) + " |")
+        self.api_key = api_key or os.getenv(
+            "GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        if not self.api_key:
+            raise ValueError("Gemini API Key is missing for Vision Parser.")
 
-        for row in table_data["rows"]:
-            md.append("| " + " | ".join(str(cell) for cell in row) + " |")
+        self.client = genai.Client(api_key=self.api_key)
+        self.model_name = 'gemini-1.5-flash'
 
-        return "\n".join(md)
-
-
-class PyMuPDFCoordinateExtractor:
-    """PyMuPDF로 정밀 좌표 추출 (보조 엔진)"""
-
-    def enhance_with_coordinates(
-        self,
-        pdf_path: Path,
-        docling_blocks: List[ParsedBlock]
-    ) -> List[ParsedBlock]:
-        """
-        Docling 결과에 PyMuPDF의 정밀 좌표를 보강
-        (Docling bbox가 부정확하거나 누락된 경우 대비)
-        """
+    def parse(self, pdf_path: Path) -> ParsedDocument:
+        """PDF를 이미지로 변환 후 Gemini에게 구조화 요청"""
         doc = pymupdf.open(pdf_path)
+        blocks = []
 
-        for block in docling_blocks:
-            if block.bbox is None:
-                # Docling에서 bbox를 찾지 못한 경우
-                page = doc[block.page - 1]  # PyMuPDF는 0-based
+        # 비용 절감을 위해 첫 3페이지만 예시로 처리 (실제 운영시 전체 루프)
+        # for page_index, page in enumerate(doc):
+        for page_index, page in enumerate(doc):
+            if page_index >= 3:
+                break
 
-                # 텍스트로 좌표 검색
-                if block.text:
-                    instances = page.search_for(block.text[:50])  # 앞 50자로 검색
-                    if instances:
-                        rect = instances[0]
-                        block.bbox = BoundingBox(
-                            x0=rect.x0, y0=rect.y0,
-                            x1=rect.x1, y1=rect.y1,
-                            page=block.page
-                        )
+            # PDF 페이지 -> 이미지 변환
+            pix = page.get_pixmap(dpi=150)
+            img_data = pix.tobytes("png")
+            image = Image.open(io.BytesIO(img_data))
+
+            # TODO: 실제 구현 시에는 Instructor 등을 사용하여 JSON 스키마를 강제해야 함
+            # 여기서는 개념 증명용 텍스트 추출만 수행
+            prompt = "Extract all text from this page. Return raw text."
+
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=[prompt, image]
+            )
+
+            blocks.append(ParsedBlock(
+                page=page_index + 1,
+                block_type="paragraph",
+                text=response.text,
+                confidence=0.8,
+                metadata={"source": "gemini_vision"}
+            ))
 
         doc.close()
-        return docling_blocks
+
+        return ParsedDocument(
+            source_path=str(pdf_path),
+            blocks=blocks,
+            metadata={"parser": "gemini_vision", "version": "1.0.0"}
+        )
 
 
 def parse_pdf(path: Path) -> ParsedDocument:
     """
-    첫 번째 문서 전략: Docling + PyMuPDF 멀티엔진
+    하이브리드 파싱 전략: Docling (최우선) -> PyMuPDF (백업) -> Gemini Vision (스캔본)
 
-    1단계: Docling으로 표 + 레이아웃 추출 (TableFormer 97.9% 정확도)
-    2단계: PyMuPDF로 좌표 보강 (누락 방지)
-    3단계: ParsedDocument 반환
+    1. Docling 시도: 표, 레이아웃, 계층 구조 완벽 지원
+    2. 실패 시 PyMuPDF: 빠르고 안정적인 텍스트 추출 (스택 기반 구조화 적용)
+    2. 텍스트가 없거나 깨진 경우(스캔 문서) Gemini Vision으로 전환 (강력함, 비용 발생)
     """
-    logger.info(f"Parsing PDF with Docling+PyMuPDF: {path}")
+    logger.info(f"Parsing PDF with Hybrid Strategy (PyMuPDF + Gemini): {path}")
 
     try:
-        # 1) Docling 파싱 (AI 기반, GPU 권장되나 CPU도 가능해야 함)
-        docling_parser = DoclingParser()
-        parsed = docling_parser.parse(path)
+        # 1. 텍스트 밀도 체크 (Digital PDF vs Scanned PDF 판별)
+        doc = pymupdf.open(path)
+        total_text_len = 0
+        for page in doc:
+            total_text_len += len(page.get_text())
 
-        # 2) PyMuPDF 좌표 보강
-        coord_extractor = PyMuPDFCoordinateExtractor()
-        parsed.blocks = coord_extractor.enhance_with_coordinates(
-            path, parsed.blocks)
+        is_scanned_document = (len(doc) > 0) and (
+            total_text_len / len(doc) < 50)
+        doc.close()
 
-        logger.info(f"Parsed {len(parsed.blocks)} blocks from {path}")
-        return parsed
+        if not is_scanned_document:
+            # 1순위: Docling
+            try:
+                logger.info("🚀 Docling 파서 시도 (표/구조 최적화)")
+                parser = DoclingParser()
+                return parser.parse(path)
+            except Exception as e:
+                logger.warning(f"⚠️ Docling 실패 ({e}). PyMuPDF로 전환합니다.")
+                # 2순위: PyMuPDF
+                parser = PyMuPDFParser()
+                return parser.parse(path)
+        else:
+            logger.info("🖼️ Scanned PDF 감지: Gemini Vision(VLM) 사용")
+            # API 키 확인
+            if not (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")):
+                logger.warning(
+                    "⚠️ Gemini API Key 없음. PyMuPDF로 강제 진행 (결과 품질 저하 가능)")
+                parser = PyMuPDFParser()
+                return parser.parse(path)
 
-    except (ImportError, Exception) as e:
-        # 3) Fallback: 환경 문제로 Docling 실패 시 PyMuPDF 단독 사용
+            parser = GeminiVisionParser()
+            return parser.parse(path)
+
+    except Exception as e:
         logger.warning(
-            f"⚠️ Docling AI 파서 실행 실패 ({e}).\n"
-            "범용 호환성을 위해 PyMuPDF Fallback 모드로 전환합니다."
+            f"⚠️ 파싱 중 에러 발생 ({e}). PyMuPDF Fallback 모드로 전환합니다."
         )
         fallback_parser = PyMuPDFParser()
         return fallback_parser.parse(path)

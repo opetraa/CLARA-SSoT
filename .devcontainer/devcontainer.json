@@ -38,6 +38,7 @@
     "source=clara-ssot-dvc-cache,target=/home/vscode/.dvc/cache,type=volume"
   ],
   "runArgs": [
+    "--gpus", "all", 
     "--network=host",
     "--env-file",
     ".env"

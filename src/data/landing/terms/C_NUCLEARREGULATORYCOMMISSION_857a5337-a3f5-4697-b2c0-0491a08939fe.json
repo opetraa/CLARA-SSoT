@@ -1,0 +1,32 @@
+{
+  "type": "term_entry",
+  "termId": "857a5337-a3f5-4697-b2c0-0491a08939fe",
+  "term": "NRC",
+  "lang": "bilingual",
+  "headword_en": "Nuclear Regulatory Commission",
+  "headword_ko": "원자력규제위원회",
+  "definition_en": "The U.S. federal agency responsible for regulating nuclear energy and safety.",
+  "definition_ko": "미국의 원자력 안전과 환경 보호를 책임지는 독립 정부 규제 기관.",
+  "slots": {
+    "context_ko": "NRC publications in the NUREG series, NRC regulations, and Title 10, Energy,'f the Code of Federal Regulations, may be purchased from one of the following sources:"
+  },
+  "examples": [],
+  "negatives": [],
+  "domain": [
+    "nuclear",
+    "regulatory"
+  ],
+  "relatedTerms": [],
+  "relations": [],
+  "taxonomyBindings": [],
+  "provenance": {
+    "sources": [
+      {
+        "docId": "DOC_f0e9bae9304f4f9db34b5c0c48f62cf9"
+      }
+    ],
+    "curationStatus": "candidate",
+    "trace_id": "d863d3d355944ceebe65869c40f700d1"
+  },
+  "status": "candidate"
+}

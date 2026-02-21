@@ -1,0 +1,32 @@
+{
+  "type": "term_entry",
+  "termId": "a022b384-e31c-4e72-bc0a-73ba9cf0eec6",
+  "term": "NRC",
+  "lang": "bilingual",
+  "headword_en": "Nuclear Regulatory Commission",
+  "headword_ko": "원자력규제위원회",
+  "definition_en": "The U.S. federal agency that regulates commercial nuclear power plants and other uses of nuclear materials, such as in nuclear medicine, through licensing, inspection, and enforcement of its requirements.",
+  "definition_ko": "원자력 발전소 및 기타 핵물질 사용(핵의학 등)을 인허가, 검사 및 규정 집행을 통해 관리하는 미국의 연방 기관.",
+  "slots": {
+    "context_ko": "A single copy of each NRC draft report is available free, to the extent of supply, upon written request as follows:"
+  },
+  "examples": [],
+  "negatives": [],
+  "domain": [
+    "nuclear",
+    "regulatory"
+  ],
+  "relatedTerms": [],
+  "relations": [],
+  "taxonomyBindings": [],
+  "provenance": {
+    "sources": [
+      {
+        "docId": "DOC_f0e9bae9304f4f9db34b5c0c48f62cf9"
+      }
+    ],
+    "curationStatus": "candidate",
+    "trace_id": "d863d3d355944ceebe65869c40f700d1"
+  },
+  "status": "candidate"
+}

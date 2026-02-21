@@ -484,6 +484,22 @@
               "피로 평가 방법론"
             ]
           },
+          "level": {
+            "type": "integer",
+            "description": "계층 깊이 (0: 문서 제목, 1: 대제목, 2: 중제목... 본문은 999)",
+            "minimum": 0
+          },
+          "contextPath": {
+            "type": "array",
+            "description": "상위 섹션 경로 (Breadcrumb) - 검색 및 LLM 문맥 보강용",
+            "items": {
+              "type": "string"
+            },
+            "examples": [
+              ["1. 서론", "1.1 배경"],
+              ["2. 본론", "2.1 실험 방법"]
+            ]
+          },
           "text": {
             "type": "string",
             "description": "블록의 텍스트 내용 (플레인 텍스트 또는 경량 마크다운)"

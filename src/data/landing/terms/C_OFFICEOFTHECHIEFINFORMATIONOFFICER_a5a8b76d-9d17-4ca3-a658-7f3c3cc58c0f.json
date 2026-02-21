@@ -1,0 +1,32 @@
+{
+  "type": "term_entry",
+  "termId": "a5a8b76d-9d17-4ca3-a658-7f3c3cc58c0f",
+  "term": "OCIO",
+  "lang": "bilingual",
+  "headword_en": "Office of the Chief Information Officer",
+  "headword_ko": "최고정보책임자실",
+  "definition_en": "An executive-level office responsible for the management, strategy, and execution of information technology and resources within an organization.",
+  "definition_ko": "조직 내 정보 기술(IT) 및 자원의 관리, 전략 및 실행을 담당하는 집행 수준의 부서.",
+  "slots": {
+    "context_ko": "Office of the Chief Information Officer Reproduction and Distribution Services Section"
+  },
+  "examples": [],
+  "negatives": [],
+  "domain": [
+    "IT",
+    "administration"
+  ],
+  "relatedTerms": [],
+  "relations": [],
+  "taxonomyBindings": [],
+  "provenance": {
+    "sources": [
+      {
+        "docId": "DOC_f0e9bae9304f4f9db34b5c0c48f62cf9"
+      }
+    ],
+    "curationStatus": "candidate",
+    "trace_id": "d863d3d355944ceebe65869c40f700d1"
+  },
+  "status": "candidate"
+}

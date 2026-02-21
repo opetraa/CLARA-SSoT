@@ -1,0 +1,33 @@
+{
+  "type": "term_entry",
+  "termId": "0f16e5be-04f8-4bee-b2f3-6f1eaf6cefc9",
+  "term": "NUREG",
+  "lang": "bilingual",
+  "headword_en": "Nuclear Regulatory Commission Regulation",
+  "headword_ko": "원자력 규제 위원회 규제 보고서",
+  "definition_en": "A series of technical and administrative reports or books published by the US Nuclear Regulatory Commission.",
+  "definition_ko": "미국 원자력 규제 위원회에서 발행하는 기술 및 행정 보고서 또는 서적 시리즈.",
+  "slots": {
+    "context_ko": "The NUREG series comprises (1) brochures (NUREGBR-X)XX), (2) proceedings of conferences (NUREG/CP-XXXX), (3) reports resulting from international agreements (NUREG/IA-)OOXQ, (4) technical and administrative reports and books [(NUREG-XXXX) or (NUREG/CR-)00X]..."
+  },
+  "examples": [],
+  "negatives": [],
+  "domain": [
+    "nuclear",
+    "regulatory",
+    "FSAR"
+  ],
+  "relatedTerms": [],
+  "relations": [],
+  "taxonomyBindings": [],
+  "provenance": {
+    "sources": [
+      {
+        "docId": "DOC_f0e9bae9304f4f9db34b5c0c48f62cf9"
+      }
+    ],
+    "curationStatus": "candidate",
+    "trace_id": "d863d3d355944ceebe65869c40f700d1"
+  },
+  "status": "candidate"
+}

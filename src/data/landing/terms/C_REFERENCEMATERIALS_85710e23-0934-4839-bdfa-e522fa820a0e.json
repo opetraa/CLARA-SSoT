@@ -1,0 +1,33 @@
+{
+  "type": "term_entry",
+  "termId": "85710e23-0934-4839-bdfa-e522fa820a0e",
+  "term": "Reference Materials",
+  "lang": "bilingual",
+  "headword_en": "Reference Materials",
+  "headword_ko": "참고 자료 / 참조 문헌",
+  "definition_en": "Documents, standards, or data sources cited in technical or regulatory publications for support, evidence, or further explanation.",
+  "definition_ko": "기술적 또는 규제적 출판물에서 지원, 증거 또는 추가 설명을 위해 인용된 문서, 표준 또는 데이터 소스.",
+  "slots": {
+    "context_ko": "Availability of Reference Materials Cited in NRC Publications"
+  },
+  "examples": [],
+  "negatives": [],
+  "domain": [
+    "nuclear",
+    "documentation",
+    "regulatory"
+  ],
+  "relatedTerms": [],
+  "relations": [],
+  "taxonomyBindings": [],
+  "provenance": {
+    "sources": [
+      {
+        "docId": "DOC_f0e9bae9304f4f9db34b5c0c48f62cf9"
+      }
+    ],
+    "curationStatus": "candidate",
+    "trace_id": "d863d3d355944ceebe65869c40f700d1"
+  },
+  "status": "candidate"
+}

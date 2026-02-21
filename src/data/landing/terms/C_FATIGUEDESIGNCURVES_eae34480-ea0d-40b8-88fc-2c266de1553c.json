@@ -1,0 +1,33 @@
+{
+  "type": "term_entry",
+  "termId": "eae34480-ea0d-40b8-88fc-2c266de1553c",
+  "term": "Fatigue Design Curves",
+  "lang": "bilingual",
+  "headword_en": "Fatigue Design Curves",
+  "headword_ko": "피로 설계 곡선",
+  "definition_en": "Curves used in engineering to relate the magnitude of cyclic stress to the number of cycles to failure, used to ensure structural integrity over the component's life.",
+  "definition_ko": "부품의 수명 동안 구조적 건전성을 보장하기 위해 반복 응력의 크기와 파손까지의 반복 횟수 간의 관계를 나타내는 설계 곡선.",
+  "slots": {
+    "context_ko": "Effects of LWR Coolant Environments on Fatigue Design Curves of Austenitic Stainless Steels"
+  },
+  "examples": [],
+  "negatives": [],
+  "domain": [
+    "nuclear",
+    "engineering",
+    "mechanics"
+  ],
+  "relatedTerms": [],
+  "relations": [],
+  "taxonomyBindings": [],
+  "provenance": {
+    "sources": [
+      {
+        "docId": "DOC_f0e9bae9304f4f9db34b5c0c48f62cf9"
+      }
+    ],
+    "curationStatus": "candidate",
+    "trace_id": "d863d3d355944ceebe65869c40f700d1"
+  },
+  "status": "candidate"
+}

@@ -1,0 +1,33 @@
+{
+  "type": "term_entry",
+  "termId": "4d7c10f3-37ce-46b6-a630-313067274cbe",
+  "term": "LWR Coolant Environments",
+  "lang": "bilingual",
+  "headword_en": "Light Water Reactor Coolant Environments",
+  "headword_ko": "경수로 냉각재 환경",
+  "definition_en": "The specific thermal and chemical conditions (pressure, temperature, water chemistry) of the coolant in a light water reactor that can influence material degradation.",
+  "definition_ko": "재료의 열화를 유발할 수 있는 경수로 내 냉각재의 특정 열적, 화학적 상태(압력, 온도, 수화학 등).",
+  "slots": {
+    "context_ko": "Effects of LWR Coolant Environments on Fatigue Design Curves of Austenitic Stainless Steels"
+  },
+  "examples": [],
+  "negatives": [],
+  "domain": [
+    "nuclear",
+    "environment",
+    "safety"
+  ],
+  "relatedTerms": [],
+  "relations": [],
+  "taxonomyBindings": [],
+  "provenance": {
+    "sources": [
+      {
+        "docId": "DOC_f0e9bae9304f4f9db34b5c0c48f62cf9"
+      }
+    ],
+    "curationStatus": "candidate",
+    "trace_id": "d863d3d355944ceebe65869c40f700d1"
+  },
+  "status": "candidate"
+}

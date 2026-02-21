@@ -1,0 +1,33 @@
+{
+  "type": "term_entry",
+  "termId": "3226d9d8-99e5-4150-b35e-60e9fafa4aa7",
+  "term": "RES",
+  "lang": "bilingual",
+  "headword_en": "Office of Nuclear Regulatory Research",
+  "headword_ko": "원자력 규제 연구국",
+  "definition_en": "A specific office within the U.S. NRC that provides independent expertise, technical information, and tools for making timely regulatory decisions.",
+  "definition_ko": "적시의 규제 결정을 내리기 위해 독립적인 전문 지식, 기술 정보 및 도구를 제공하는 미국 원자력 규제 위원회(NRC) 산하의 부서.",
+  "slots": {
+    "context_ko": "U.S. Nuclear Regulatory Commission Office of Nuclear Regulatory Research Washington, DC 20555-0001"
+  },
+  "examples": [],
+  "negatives": [],
+  "domain": [
+    "nuclear",
+    "research",
+    "regulatory"
+  ],
+  "relatedTerms": [],
+  "relations": [],
+  "taxonomyBindings": [],
+  "provenance": {
+    "sources": [
+      {
+        "docId": "DOC_f0e9bae9304f4f9db34b5c0c48f62cf9"
+      }
+    ],
+    "curationStatus": "candidate",
+    "trace_id": "d863d3d355944ceebe65869c40f700d1"
+  },
+  "status": "candidate"
+}

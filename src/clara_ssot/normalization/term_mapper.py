@@ -50,64 +50,71 @@ class LLMTermExtractor:
     """
 
     def __init__(self, api_key: str):
-        # Gemini 설정
+        # Gemini 설정 (Instructor 호환용 구형 SDK 사용)
         genai.configure(api_key=api_key)
 
-        # 사용 가능한 모델 중 최적의 모델 자동 선택
-        model_name = self._select_best_model()
-        logger.info(f"🤖 Initializing Gemini with model: {model_name}")
+        # 사용 가능한 모델 후보군 설정 (Fallback을 위해 리스트로 관리)
+        self.model_candidates = self._get_model_candidates()
+        self.current_model_idx = 0
+        self.model_name = self.model_candidates[0]
 
+        logger.info(f"🤖 Initializing Gemini with model: {self.model_name}")
+        self._init_client()
+
+    def _init_client(self):
+        # Instructor 클라이언트 래핑 (표준화된 인터페이스 제공)
         self.client = instructor.from_gemini(
-            client=genai.GenerativeModel(model_name=model_name),
+            client=genai.GenerativeModel(model_name=self.model_name),
             mode=instructor.Mode.GEMINI_JSON,
         )
 
-    def _select_best_model(self) -> str:
-        """API 키로 접근 가능한 모델 중 최적의 모델을 자동으로 선택"""
+    def _get_model_candidates(self) -> List[str]:
+        """API 키로 접근 가능한 모델 중 최적의 모델 후보 리스트 반환"""
+        candidates = []
         target_model = os.getenv("GEMINI_MODEL")
 
-        try:
-            # 1. 사용 가능한 모델 목록 조회
-            all_models = list(genai.list_models())
-            # generateContent 기능을 지원하는 모델만 필터링
-            available_models = [
-                m.name.replace("models/", "")
-                for m in all_models
-                if "generateContent" in m.supported_generation_methods
-            ]
+        # 1. 환경변수 모델 최우선
+        if target_model:
+            candidates.append(target_model)
 
+        # 2. 선호하는 모델 순서 (성능/비용/쿼터 고려)
+        # 429 에러 발생 시 순차적으로 다음 모델을 시도함
+        preferences = [
+            "gemini-3-flash-preview",
+            "gemini-2.5-pro",
+            "gemini-2.5-flash",
+            "gemini-2.5-flash-lite",
+            "gemini-2.0-flash",
+            "gemini-1.5-flash",
+            "gemini-1.5-flash-8b",
+            "gemini-1.5-pro",
+        ]
+
+        try:
+            # 3. 실제 사용 가능한 모델 목록 조회
+            available_models = [m.name.replace(
+                "models/", "") for m in genai.list_models()]
             logger.info(f"📋 Available Gemini models: {available_models}")
 
-            # 2. 환경변수로 지정된 모델이 유효한지 확인
-            if target_model:
-                if target_model in available_models:
-                    return target_model
-                logger.warning(
-                    f"⚠️ Configured model '{target_model}' not found. Attempting auto-selection.")
-
-            # 3. 선호하는 모델 순서대로 확인 (최신 버전 우선)
-            preferences = [
-                "gemini-1.5-flash-002",
-                "gemini-1.5-flash-001",
-                "gemini-1.5-flash",
-                "gemini-1.5-pro-002",
-                "gemini-1.5-pro-001",
-                "gemini-1.5-pro",
-            ]
-
             for pref in preferences:
-                if pref in available_models:
-                    return pref
+                if pref in available_models and pref not in candidates:
+                    candidates.append(pref)
 
             # 4. 선호 모델이 없으면 목록의 첫 번째 모델 사용
-            if available_models:
-                return available_models[0]
+            if not candidates and available_models:
+                candidates.append(available_models[0])
 
         except Exception as e:
             logger.error(f"⚠️ Failed to list models: {e}")
+            # API 호출 실패 시 기본 리스트 사용
+            for pref in preferences:
+                if pref not in candidates:
+                    candidates.append(pref)
 
-        # 실패 시 기본값 반환
-        return target_model or "gemini-1.5-flash"
+        if not candidates:
+            candidates = ["gemini-1.5-flash"]
+
+        return candidates
 
     def extract(self, text_chunks: List[str]) -> Tuple[List[TermCandidate], List[str]]:
         """
@@ -219,16 +226,34 @@ class LLMTermExtractor:
 추론 과정을 reasoning 필드에 자세히 기록하고, terms 배열에 추출 결과를 담으세요.
 """
 
-        # Instructor로 구조화된 출력 강제
-        response = self.client.chat.completions.create(
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            response_model=TermExtractionResult,
-            max_retries=3,
-        )
+        # 모델 Fallback 루프
+        while True:
+            try:
+                # Instructor를 통한 구조화된 출력 요청
+                response = self.client.chat.completions.create(
+                    messages=[{"role": "user", "content": prompt}],
+                    response_model=TermExtractionResult,
+                    max_retries=2,  # 내부 재시도 (일시적 오류용)
+                )
+                return response
+            except Exception as e:
+                # 429 Quota Exceeded 에러 처리
+                if "429" in str(e) or "Quota exceeded" in str(e) or "ResourceExhausted" in str(e):
+                    logger.warning(
+                        f"⚠️ Quota exceeded for model {self.model_name}.")
 
-        return response
+                    # 다음 모델로 전환
+                    self.current_model_idx += 1
+                    if self.current_model_idx < len(self.model_candidates):
+                        self.model_name = self.model_candidates[self.current_model_idx]
+                        logger.info(
+                            f"🔄 Switching to fallback model: {self.model_name}")
+                        self._init_client()
+                        continue
+                    else:
+                        logger.error("❌ All fallback models exhausted.")
+                        raise e
+                raise e
 
 
 def extract_term_candidates(
