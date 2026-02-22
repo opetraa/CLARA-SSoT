@@ -1,4 +1,3 @@
-# src/clara_ssot/parsing/pdf_parser.py
 import io
 import logging
 import os
@@ -9,7 +8,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-# PyMuPDF 임포트
 import pymupdf
 from PIL import Image
 
@@ -44,8 +42,7 @@ class ParsedBlock:
     bbox: Optional[BoundingBox] = None
     table_data: Optional[Dict] = None
     confidence: float = 1.0
-    # 계층 구조 및 메타데이터 상속 필드 추가
-    level: int = 999  # 0: Title, 1: Section, ... 999: Paragraph
+    level: int = 999
     context_path: List[str] = field(default_factory=list)
     parent_id: Optional[str] = None
     block_id: Optional[str] = None
@@ -68,38 +65,32 @@ class PyMuPDFParser:
         doc = pymupdf.open(pdf_path)
         blocks = []
 
-        # 0. 전처리: 문서 전체의 폰트 통계 분석 (본문 폰트 크기 추정)
         font_sizes = []
         for page in doc:
             blocks_raw = page.get_text("dict")["blocks"]
             for b in blocks_raw:
-                if b["type"] == 0:  # text
+                if b["type"] == 0:
                     for line in b["lines"]:
                         for span in line["spans"]:
                             if span["text"].strip():
                                 font_sizes.append(round(span["size"], 1))
 
-        # 가장 빈번한 폰트 크기를 본문 크기로 간주
         if font_sizes:
             body_font_size = Counter(font_sizes).most_common(1)[0][0]
         else:
-            body_font_size = 10.0  # 기본값
+            body_font_size = 10.0
 
         logger.info(f"Detected body font size: {body_font_size}pt")
 
-        # 계층 구조 추적을 위한 스택
-        # 구조: {'level': int, 'id': str, 'title': str}
         context_stack = []
 
         for page_index, page in enumerate(doc):
-            # 폰트 정보를 얻기 위해 "dict" 모드 사용
             page_dict = page.get_text("dict")
 
             for block in page_dict.get("blocks", []):
-                if block["type"] != 0:  # 0: text, 1: image
+                if block["type"] != 0:
                     continue
 
-                # 블록 내 텍스트 병합 및 스타일 대표값 추출
                 block_text_parts = []
                 max_font_size = 0.0
                 is_bold = False
@@ -109,7 +100,6 @@ class PyMuPDFParser:
                         block_text_parts.append(span["text"])
                         if span["size"] > max_font_size:
                             max_font_size = span["size"]
-                        # PyMuPDF flags: 2^4 (16) is bold
                         if span["flags"] & 16:
                             is_bold = True
 
@@ -117,21 +107,17 @@ class PyMuPDFParser:
                 if not clean_text:
                     continue
 
-                # 1. 레벨 및 타입 판별 (Dynamic Heuristic)
                 level, inferred_type = self._determine_structure(
                     clean_text, max_font_size, is_bold, body_font_size
                 )
                 block_id = str(uuid.uuid4())
 
-                # 2. 스택 조정 (Pop): 현재 레벨보다 깊거나 같은 이전 섹션 닫기
                 while context_stack and context_stack[-1]["level"] >= level:
                     context_stack.pop()
 
-                # 3. 부모 연결 및 컨텍스트 상속
                 parent_id = context_stack[-1]["id"] if context_stack else None
                 current_context_path = [item["title"] for item in context_stack]
 
-                # 4. 블록 생성
                 blocks.append(
                     ParsedBlock(
                         page=page_index + 1,
@@ -152,7 +138,6 @@ class PyMuPDFParser:
                     )
                 )
 
-                # 5. 스택 푸시 (Push): 섹션인 경우 스택에 추가하여 하위 블록의 부모가 됨
                 if level < 999:
                     context_stack.append(
                         {"level": level, "id": block_id, "title": clean_text}
@@ -169,7 +154,6 @@ class PyMuPDFParser:
     def _determine_structure(
         self, text: str, font_size: float, is_bold: bool, body_size: float
     ) -> Tuple[int, str]:
-        """텍스트 패턴과 폰트 스타일로 레벨과 타입을 결정"""
         if re.match(
             r"^\s*(목\s*차|table of contents|contents|abstract|introduction|서\s*론)\s*$",
             text,
@@ -200,7 +184,6 @@ class DoclingParser:
     """
 
     def __init__(self):
-        # Docling Lazy Import (의존성 없을 시 Fallback 유도)
         try:
             import torch
             from docling.datamodel.base_models import InputFormat
@@ -351,7 +334,6 @@ class GeminiVisionParser:
         self.client = genai.Client(api_key=self.api_key)
         self.model_name = "gemini-1.5-flash"
 
-    # 수정 1: max_pages 파라미터 추가로 하드코딩 제거
     def parse(self, pdf_path: Path, max_pages: Optional[int] = None) -> ParsedDocument:
         """PDF를 이미지로 변환 후 Gemini에게 구조화 요청"""
         doc = pymupdf.open(pdf_path)
@@ -389,8 +371,8 @@ class GeminiVisionParser:
         )
 
 
-# 수정 3: Docling 인스턴스 지연 초기화 (싱글톤 패턴 응용)를 위한 전역 변수
 _DOCLING_PARSER_INSTANCE = None
+
 
 def get_docling_parser() -> DoclingParser:
     global _DOCLING_PARSER_INSTANCE
@@ -410,7 +392,6 @@ def parse_pdf(path: Path, max_vision_pages: Optional[int] = None) -> ParsedDocum
     logger.info(f"Parsing PDF with Hybrid Strategy (PyMuPDF + Gemini): {path}")
 
     try:
-        # 1. 텍스트 밀도 체크 (Digital PDF vs Scanned PDF 판별)
         doc = pymupdf.open(path)
         total_text_len = 0
         for page in doc:
@@ -420,22 +401,16 @@ def parse_pdf(path: Path, max_vision_pages: Optional[int] = None) -> ParsedDocum
         doc.close()
 
         if not is_scanned_document:
-            # 1순위: Docling
             try:
                 logger.info("🚀 Docling 파서 시도 (표/구조 최적화)")
-                # 수정 3 적용: 함수 호출 시마다 인스턴스를 만들지 않고 재사용합니다.
                 parser = get_docling_parser()
                 return parser.parse(path)
             except Exception as e:
                 logger.warning(f"⚠️ Docling 실패 ({e}). PyMuPDF로 전환합니다.")
-                # 2순위: PyMuPDF
                 parser = PyMuPDFParser()
                 return parser.parse(path)
         else:
             logger.info("🖼️ Scanned PDF 감지: Gemini Vision(VLM) 사용")
-            # 수정 2: 불필요한 API 키 체크 로직 삭제. 
-            # API 키가 없으면 GeminiVisionParser에서 알아서 ValueError를 발생시키고,
-            # 아래의 예외 처리(except Exception as e:)가 잡아서 PyMuPDF로 넘겨줍니다.
             parser = GeminiVisionParser()
             return parser.parse(path, max_pages=max_vision_pages)
 
