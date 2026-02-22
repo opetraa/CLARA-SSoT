@@ -8,10 +8,19 @@ from clara_ssot.normalization.term_mapper import extract_term_candidates, TermCa
 
 
 @patch("clara_ssot.parsing.pdf_parser.DoclingParser")
-@patch("clara_ssot.parsing.pdf_parser.PyMuPDFCoordinateExtractor")
+@patch("clara_ssot.parsing.pdf_parser.pymupdf")
 def test_docling_pymupdf_parsing(MockPyMuPDF, MockDocling):
     """Docling+PyMuPDF 멀티엔진 테스트 (Mocked)"""
     pdf_path = Path("data/test_sample.pdf")
+
+    # Mock pymupdf.open for text density check in parse_pdf
+    mock_doc = MagicMock()
+    mock_page = MagicMock()
+    mock_page.get_text.return_value = "A" * 200  # 충분한 텍스트 (스캔 문서가 아님)
+    mock_doc.__iter__ = MagicMock(return_value=iter([mock_page]))
+    mock_doc.__len__ = MagicMock(return_value=1)
+    mock_doc.close = MagicMock()
+    MockPyMuPDF.open.return_value = mock_doc
 
     # Mock DoclingParser behavior
     mock_docling_instance = MockDocling.return_value
@@ -35,10 +44,6 @@ def test_docling_pymupdf_parsing(MockPyMuPDF, MockDocling):
         metadata={"parser": "docling"}
     )
 
-    # Mock PyMuPDF behavior (pass-through)
-    mock_pymupdf_instance = MockPyMuPDF.return_value
-    mock_pymupdf_instance.enhance_with_coordinates.side_effect = lambda path, blocks: blocks
-
     parsed = parse_pdf(pdf_path)
 
     assert len(parsed.blocks) > 0
@@ -58,19 +63,22 @@ def test_docling_pymupdf_parsing(MockPyMuPDF, MockDocling):
 def test_llm_term_extraction(MockLLMExtractor):
     """LLM TERM 추출 테스트 (Mocked)"""
 
-    # Mock LLM behavior
+    # Mock LLM behavior - extract()는 (candidates, errors) 튜플 반환
     mock_extractor_instance = MockLLMExtractor.return_value
-    mock_extractor_instance.extract.return_value = [
-        TermCandidate(
-            term="AMP",
-            definition_en="Aging Management Program",
-            definition_ko="경년열화 관리 프로그램",
-            headword_en="Aging Management Program",
-            headword_ko="경년열화 관리 프로그램",
-            domain=["nuclear"],
-            context="경년열화 관리 프로그램(AMP)은..."
-        )
-    ]
+    mock_extractor_instance.extract.return_value = (
+        [
+            TermCandidate(
+                term="AMP",
+                definition_en="Aging Management Program",
+                definition_ko="경년열화 관리 프로그램",
+                headword_en="Aging Management Program",
+                headword_ko="경년열화 관리 프로그램",
+                domain=["nuclear"],
+                context="경년열화 관리 프로그램(AMP)은..."
+            )
+        ],
+        []  # errors
+    )
 
     # 더미 문서
     dummy_doc = ParsedDocument(
@@ -85,7 +93,7 @@ def test_llm_term_extraction(MockLLMExtractor):
     )
 
     api_key = "test_key"  # 실제 테스트에서는 환경변수 사용
-    candidates = extract_term_candidates(dummy_doc, llm_api_key=api_key)
+    candidates, errors = extract_term_candidates(dummy_doc, llm_api_key=api_key)
 
     assert len(candidates) > 0
     assert any("AMP" in c.term for c in candidates)
