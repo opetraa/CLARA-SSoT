@@ -1,6 +1,8 @@
 {
   "name": "CLARA-SSoT Development",
-  "image": "mcr.microsoft.com/devcontainers/python:3.11-bullseye",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   "features": {
     "ghcr.io/devcontainers/features/python:1": {
       "version": "3.11"
@@ -28,17 +30,22 @@
         "python.formatting.provider": "black",
         "python.terminal.activateEnvironment": true,
         "editor.formatOnSave": true,
-        "files.autoSave": "afterDelay"
+        "files.autoSave": "afterDelay",
+        "geminicodeassist.project": "",
+        "geminicodeassist.enableCloudAICompanion": true
       }
     }
   },
-  "postCreateCommand": "sudo apt-get update || true && sudo apt-get install -y libgl1 && pip install poetry && poetry install && pip install dvc[s3,gs,azure,ssh,gdrive] black isort pylint pytest pytest-cov pytest-asyncio pre-commit",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "bash .devcontainer/post-start.sh",
   "remoteUser": "vscode",
   "mounts": [
-    "source=clara-ssot-dvc-cache,target=/home/vscode/.dvc/cache,type=volume"
+    "source=clara-ssot-dvc-cache,target=/home/vscode/.dvc/cache,type=volume",
+    "source=clara-ssot-gcloud-config,target=/home/vscode/.config/gcloud,type=volume",
+    "source=clara-ssot-vscode-extensions,target=/home/vscode/.vscode-server/extensions,type=volume"
   ],
   "runArgs": [
-    "--gpus", "all", 
+    "--gpus", "all",
     "--network=host",
     "--env-file",
     ".env"
