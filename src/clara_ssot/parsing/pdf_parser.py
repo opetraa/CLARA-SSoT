@@ -8,6 +8,7 @@ import re
 import uuid
 import io
 from PIL import Image
+from collections import Counter
 
 # PyMuPDF 임포트
 import pymupdf
@@ -66,6 +67,25 @@ class PyMuPDFParser:
         doc = pymupdf.open(pdf_path)
         blocks = []
 
+        # 0. 전처리: 문서 전체의 폰트 통계 분석 (본문 폰트 크기 추정)
+        font_sizes = []
+        for page in doc:
+            blocks_raw = page.get_text("dict")["blocks"]
+            for b in blocks_raw:
+                if b["type"] == 0:  # text
+                    for line in b["lines"]:
+                        for span in line["spans"]:
+                            if span["text"].strip():
+                                font_sizes.append(round(span["size"], 1))
+
+        # 가장 빈번한 폰트 크기를 본문 크기로 간주
+        if font_sizes:
+            body_font_size = Counter(font_sizes).most_common(1)[0][0]
+        else:
+            body_font_size = 10.0  # 기본값
+
+        logger.info(f"Detected body font size: {body_font_size}pt")
+
         # 계층 구조 추적을 위한 스택
         # 구조: {'level': int, 'id': str, 'title': str}
         context_stack = []
@@ -96,15 +116,15 @@ class PyMuPDFParser:
                 if not clean_text:
                     continue
 
-                # 1. 레벨 및 타입 판별 (Rule-based Decision)
+                # 1. 레벨 및 타입 판별 (Dynamic Heuristic)
                 level, inferred_type = self._determine_structure(
-                    clean_text, max_font_size, is_bold)
+                    clean_text, max_font_size, is_bold, body_font_size)
                 block_id = str(uuid.uuid4())
 
                 # 2. 스택 조정 (Pop): 현재 레벨보다 깊거나 같은 이전 섹션 닫기
-                if inferred_type in ["title", "section"]:
-                    while context_stack and context_stack[-1]['level'] >= level:
-                        context_stack.pop()
+                # 제목(Header)이 나오면, 그보다 하위 레벨(숫자가 큰)의 컨텍스트는 종료됨
+                while context_stack and context_stack[-1]['level'] >= level:
+                    context_stack.pop()
 
                 # 3. 부모 연결 및 컨텍스트 상속
                 parent_id = context_stack[-1]['id'] if context_stack else None
@@ -129,7 +149,8 @@ class PyMuPDFParser:
                 ))
 
                 # 5. 스택 푸시 (Push): 섹션인 경우 스택에 추가하여 하위 블록의 부모가 됨
-                if inferred_type in ["title", "section"]:
+                # 단, 본문(Level 999)은 스택에 넣지 않음 (본문은 부모가 될 수 없음)
+                if level < 999:
                     context_stack.append({
                         'level': level,
                         'id': block_id,
@@ -141,26 +162,33 @@ class PyMuPDFParser:
         return ParsedDocument(
             source_path=str(pdf_path),
             blocks=blocks,
-            metadata={"parser": "pymupdf_stack", "version": "2.0.0"}
+            metadata={"parser": "pymupdf_dynamic_stack", "version": "2.1.0"}
         )
 
-    def _determine_structure(self, text: str, font_size: float, is_bold: bool) -> Tuple[int, str]:
+    def _determine_structure(self, text: str, font_size: float, is_bold: bool, body_size: float) -> Tuple[int, str]:
         """텍스트 패턴과 폰트 스타일로 레벨과 타입을 결정"""
         # 1. 목차/제목 (Level 0) - 정규식 강화
-        if re.match(r'^\s*(목\s*차|table of contents|contents)\s*$', text, re.IGNORECASE):
+        if re.match(r'^\s*(목\s*차|table of contents|contents|abstract|introduction|서\s*론)\s*$', text, re.IGNORECASE):
             return 0, "title"
 
         # 2. 섹션 번호 패턴 (Level 1~N)
         # 예: "1. 서론" -> Level 1, "1.1 배경" -> Level 2, "1.1.1 상세" -> Level 3
-        match = re.match(r'^(\d+(?:\.\d+)*)\.?\s+', text)
+        # NUREG 보고서 등에서 흔한 "2." 또는 "2.1" 패턴 인식
+        match = re.match(r'^(\d+(?:\.\d+)*)\.?\s+\w+', text)
         if match:
             depth = match.group(1).count('.') + 1
             return depth, "section"
 
         # 3. 폰트 기반 헤더 추론 (번호가 없는 대제목)
-        # 일반 본문보다 크고(예: >12pt) Bold인 경우
-        if font_size > 12 and is_bold:
-            return 1, "section"
+        # 본문보다 20% 이상 크거나, 10% 이상 크면서 Bold인 경우
+        if font_size > body_size * 1.2:
+            # 아주 큰 폰트는 상위 레벨 (예: 1.5배 이상 -> Level 1)
+            if font_size > body_size * 1.5:
+                return 1, "section"
+            return 2, "section"
+
+        if is_bold and font_size > body_size * 1.05:
+            return 3, "section"
 
         # 4. 일반 본문
         return 999, "paragraph"

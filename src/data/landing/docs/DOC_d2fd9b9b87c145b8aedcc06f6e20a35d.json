@@ -1,8 +1,8 @@
 {
-  "documentId": "DOC_f0e9bae9304f4f9db34b5c0c48f62cf9",
+  "documentId": "DOC_d2fd9b9b87c145b8aedcc06f6e20a35d",
   "$schema": "https://clara-ssot.org/schemas/doc-baseline/v1.0.0",
   "version": "1.0.0",
-  "lastUpdated": "2026-02-21T18:30:17.375362Z",
+  "lastUpdated": "2026-02-22T08:01:47.446708Z",
   "metadata": {
     "dc:title": "Unknown title (from PDF)",
     "dc:type": "TechnicalReport",
@@ -12,7 +12,7 @@
     "sourceFile": "/workspaces/CLARA-SSoT/data/NUREG_CR-5704_sample.pdf",
     "extractionMetadata": {
       "parserVersion": "0.1.0",
-      "extractionDate": "2026-02-21T18:30:17.375362Z",
+      "extractionDate": "2026-02-22T08:01:47.446708Z",
       "ocrApplied": false,
       "confidence": 0.5
     },
