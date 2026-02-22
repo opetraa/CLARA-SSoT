@@ -1,15 +1,17 @@
 # tests/test_parsing_strategy.py
 # tests/test_parsing_strategy.py
-import pytest
-from unittest.mock import patch, MagicMock
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from clara_ssot.normalization.term_mapper import TermCandidate, extract_term_candidates
 from clara_ssot.parsing.pdf_parser import (
-    parse_pdf,
-    ParsedDocument,
-    ParsedBlock,
     BoundingBox,
+    ParsedBlock,
+    ParsedDocument,
+    parse_pdf,
 )
-from clara_ssot.normalization.term_mapper import extract_term_candidates, TermCandidate
 
 
 @patch("clara_ssot.parsing.pdf_parser.DoclingParser")

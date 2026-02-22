@@ -1,12 +1,12 @@
 # src/clara_ssot/normalization/term_mapper.py
-from dataclasses import dataclass
-from typing import Any, Dict, List, Tuple
 import logging
 import os
 import uuid
+from dataclasses import dataclass
+from typing import Any, Dict, List, Tuple
 
-import instructor
 import google.generativeai as genai
+import instructor
 from pydantic import BaseModel, Field
 
 from ..parsing.pdf_parser import ParsedDocument

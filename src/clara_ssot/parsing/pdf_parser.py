@@ -1,17 +1,17 @@
 # src/clara_ssot/parsing/pdf_parser.py
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+import io
 import logging
 import os
 import re
 import uuid
-import io
-from PIL import Image
 from collections import Counter
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
 # PyMuPDF 임포트
 import pymupdf
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 
@@ -212,14 +212,14 @@ class DoclingParser:
     def __init__(self):
         # Docling Lazy Import (의존성 없을 시 Fallback 유도)
         try:
-            from docling.document_converter import DocumentConverter, PdfFormatOption
+            import torch
             from docling.datamodel.base_models import InputFormat
             from docling.datamodel.pipeline_options import (
-                PdfPipelineOptions,
-                AcceleratorOptions,
                 AcceleratorDevice,
+                AcceleratorOptions,
+                PdfPipelineOptions,
             )
-            import torch
+            from docling.document_converter import DocumentConverter, PdfFormatOption
 
             # GPU 가용성 체크 및 디바이스 설정
             if torch.cuda.is_available():

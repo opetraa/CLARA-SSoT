@@ -15,9 +15,9 @@ sys.path.append(str(project_root))
 
 # 2. 프로젝트 모듈 임포트 (sys.path 설정 후)
 try:
-    from src.clara_ssot.validation.json_schema_validator import schema_registry
-    from src.clara_ssot.logging_setup import configure_logging
     from src.clara_ssot.api.pipeline import ingest_single_document
+    from src.clara_ssot.logging_setup import configure_logging
+    from src.clara_ssot.validation.json_schema_validator import schema_registry
 except ImportError as e:
     print(f"❌ Error importing project modules: {e}")
     print(f"   Current sys.path: {sys.path}")

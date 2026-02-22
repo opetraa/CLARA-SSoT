@@ -1,7 +1,7 @@
 # src/clara_ssot/curation/term_curation_service.py
+import re
 from collections import defaultdict
 from typing import Any, Dict, List
-import re
 
 
 def merge_term_candidates(candidates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
