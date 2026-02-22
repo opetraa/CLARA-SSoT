@@ -252,9 +252,7 @@ class LLMTermExtractor:
                     self.current_model_idx += 1
                     if self.current_model_idx < len(self.model_candidates):
                         self.model_name = self.model_candidates[self.current_model_idx]
-                        logger.info(
-                            f"🔄 Switching to fallback model: {self.model_name}"
-                        )
+                        logger.info(f"🔄 Switching to fallback model: {self.model_name}")
                         self._init_client()
                         continue
                     else:

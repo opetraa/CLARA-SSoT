@@ -67,9 +67,7 @@ def main():
             doc_id = result.get("documentId", "Unknown ID")
             term_count = result.get("promotedTermCount", 0)
 
-            logger.info(
-                f"✅ 성공: {pdf_path.name} (DocID: {doc_id}, Terms: {term_count})"
-            )
+            logger.info(f"✅ 성공: {pdf_path.name} (DocID: {doc_id}, Terms: {term_count})")
             success_count += 1
 
         except Exception as e:

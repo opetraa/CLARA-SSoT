@@ -257,9 +257,7 @@ class DoclingParser:
                     InputFormat.PDF
                 ].pipeline_options.do_table_structure = True
             except ImportError:
-                logger.warning(
-                    "OpenCV(cv2) 없음. 표 구조 추출 기능이 제한될 수 있습니다."
-                )
+                logger.warning("OpenCV(cv2) 없음. 표 구조 추출 기능이 제한될 수 있습니다.")
                 self.converter.format_to_options[
                     InputFormat.PDF
                 ].pipeline_options.do_table_structure = False
@@ -457,9 +455,7 @@ def parse_pdf(path: Path) -> ParsedDocument:
             logger.info("🖼️ Scanned PDF 감지: Gemini Vision(VLM) 사용")
             # API 키 확인
             if not (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")):
-                logger.warning(
-                    "⚠️ Gemini API Key 없음. PyMuPDF로 강제 진행 (결과 품질 저하 가능)"
-                )
+                logger.warning("⚠️ Gemini API Key 없음. PyMuPDF로 강제 진행 (결과 품질 저하 가능)")
                 parser = PyMuPDFParser()
                 return parser.parse(path)
 
@@ -467,8 +463,6 @@ def parse_pdf(path: Path) -> ParsedDocument:
             return parser.parse(path)
 
     except Exception as e:
-        logger.warning(
-            f"⚠️ 파싱 중 에러 발생 ({e}). PyMuPDF Fallback 모드로 전환합니다."
-        )
+        logger.warning(f"⚠️ 파싱 중 에러 발생 ({e}). PyMuPDF Fallback 모드로 전환합니다.")
         fallback_parser = PyMuPDFParser()
         return fallback_parser.parse(path)

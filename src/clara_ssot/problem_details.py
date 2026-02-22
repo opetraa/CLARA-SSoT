@@ -5,9 +5,7 @@ from pydantic import BaseModel, Field
 
 
 class MachineReadableError(BaseModel):
-    code: str = Field(
-        ..., description="짧은 오류 코드 (예: 'schema_validation_failed')"
-    )
+    code: str = Field(..., description="짧은 오류 코드 (예: 'schema_validation_failed')")
     target: Optional[str] = Field(
         None, description="에러가 발생한 필드나 리소스 (예: 'TERM.definition_en')"
     )
