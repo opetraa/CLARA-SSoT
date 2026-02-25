@@ -12,18 +12,18 @@ TERM 3단 분리 아키텍처 단위 테스트.
 import pytest
 from pydantic import ValidationError
 
-from clara_ssot.models.term_types import (
+from tractara.models.term_types import (
     TermClassReference,
     TermRelReference,
     TermRuleReference,
     TermType,
 )
-from clara_ssot.normalization.term_mapper import (
+from tractara.normalization.term_mapper import (
     TermCandidate,
     _normalize_term_id,
     build_term_baseline_candidates,
 )
-from clara_ssot.curation.term_curation_service import merge_term_candidates
+from tractara.curation.term_curation_service import merge_term_candidates
 
 
 # ── TermType Enum ────────────────────────────────────────────────────────────

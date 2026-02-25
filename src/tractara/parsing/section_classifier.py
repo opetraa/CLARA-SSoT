@@ -1,4 +1,4 @@
-# src/clara_ssot/parsing/section_classifier.py
+# src/tractara/parsing/section_classifier.py
 # 튜닝 가능한 파라미터 (section_classifier.py):
 # 임계치: score >= 70 라인
 # 각 힌트 가중치: +50, +40, +30, +20, +10 숫자들

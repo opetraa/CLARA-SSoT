@@ -1,0 +1,629 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Tractara TERM Baseline Schema",
+  "description": "고규제 도메인을 위한 SSoT(Single Source of Truth) 기반 용어 사전 스키마. 비정형 문서에서 추출된 전문 용어를 인지 프레임(Cognitive Frame) 구조로 체계화하여 단어-의미 접지(Word-Sense Grounding)를 수행",
+  "version": "1.0.0",
+  "type": "object",
+  "required": [
+    "type",
+    "termId",
+    "termType",
+    "term",
+    "lang",
+    "definition_en"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "엔트리 종류",
+      "enum": [
+        "term_entry"
+      ],
+      "default": "term_entry"
+    },
+    "termId": {
+      "type": "string",
+      "description": "용어의 전역 고유 식별자 (기본 키). 타입 prefix를 포함한 URN 형식 (term:class: | term:rel: | term:rule:). headword_en 기반 영문 소문자로 정규화",
+      "pattern": "^term:(class|rel|rule):[a-zA-Z0-9][a-zA-Z0-9_.-]*$",
+      "examples": [
+        "term:class:aging_management_program",
+        "term:class:stress_corrosion_cracking",
+        "term:rel:exceeds_threshold",
+        "term:rule:amp_inspection_interval_rule"
+      ]
+    },
+    "termType": {
+      "type": "string",
+      "description": "TERM 타입 분류. termId prefix와 반드시 일치해야 한다 (term:class:* → TERM-CLASS, term:rel:* → TERM-REL, term:rule:* → TERM-RULE)",
+      "enum": [
+        "TERM-CLASS",
+        "TERM-REL",
+        "TERM-RULE"
+      ],
+      "examples": [
+        "TERM-CLASS"
+      ]
+    },
+    "term": {
+      "type": "string",
+      "description": "대표 표기 (약어 또는 주 용어명)",
+      "minLength": 1,
+      "examples": [
+        "AMP",
+        "SCC",
+        "PSR",
+        "TLAA"
+      ]
+    },
+    "lang": {
+      "type": "string",
+      "description": "용어의 언어 범위",
+      "enum": [
+        "en",
+        "ko",
+        "bilingual"
+      ],
+      "examples": [
+        "bilingual"
+      ]
+    },
+    "headword_en": {
+      "type": "string",
+      "description": "영문 표제어 (정식 명칭 또는 풀네임)",
+      "examples": [
+        "Aging Management Program",
+        "Stress Corrosion Cracking"
+      ]
+    },
+    "headword_ko": {
+      "type": "string",
+      "description": "한글 표제어 (정식 명칭 또는 풀네임)",
+      "examples": [
+        "경년열화 관리 프로그램",
+        "응력부식균열"
+      ]
+    },
+    "definition_en": {
+      "type": "string",
+      "description": "영문 정의 (교과서적 정의, 검색·요약·툴팁에 직접 사용)",
+      "minLength": 10,
+      "examples": [
+        "A systematic, documented program to monitor, evaluate, and control age-related degradation of structures, systems, and components."
+      ]
+    },
+    "definition_ko": {
+      "type": "string",
+      "description": "한글 정의 (교과서적 정의, 검색·요약·툴팁에 직접 사용)",
+      "minLength": 10,
+      "examples": [
+        "구조물·계통·기기의 경년열화를 체계적으로 모니터링·평가·관리하여 설계수명 및 계속운전 기간 동안 본래의 안전·성능 기능을 유지하도록 하는 문서화된 관리 프로그램."
+      ]
+    },
+    "slots": {
+      "type": "object",
+      "description": "표적 개념의 ontological context를 반영하는 핵심 데이터. 개념-관계-개념 형태의 링크 세트 및 개념의 의미를 반영하는 사실 집합 (인지 프레임)",
+      "properties": {
+        "purpose_en": {
+          "type": "string",
+          "description": "영문 목적 - 왜 이 용어/프로그램이 필요한가"
+        },
+        "purpose_ko": {
+          "type": "string",
+          "description": "한글 목적 - 왜 이 용어/프로그램이 필요한가"
+        },
+        "scope_en": {
+          "type": "string",
+          "description": "영문 적용범위 - 어디에 쓰는가 (대상·설비·문서 범위)"
+        },
+        "scope_ko": {
+          "type": "string",
+          "description": "한글 적용범위 - 어디에 쓰는가 (대상·설비·문서 범위)"
+        },
+        "components_en": {
+          "type": "array",
+          "description": "영문 구성요소 - 프로그램/개념을 이루는 기능 블록 리스트",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "inspection",
+              "monitoring",
+              "evaluation",
+              "maintenance",
+              "corrective actions"
+            ]
+          ]
+        },
+        "components_ko": {
+          "type": "array",
+          "description": "한글 구성요소 - 프로그램/개념을 이루는 기능 블록 리스트",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "검사",
+              "모니터링",
+              "평가",
+              "유지보수",
+              "시정조치"
+            ]
+          ]
+        },
+        "lifecycle_en": {
+          "type": "string",
+          "description": "영문 라이프사이클 - 화살표(→) 또는 > 로 단계 흐름 기술",
+          "examples": [
+            "Plan → Implement → Monitor → Evaluate → Correct → Update"
+          ]
+        },
+        "lifecycle_ko": {
+          "type": "string",
+          "description": "한글 라이프사이클 - 화살표(→) 또는 > 로 단계 흐름 기술",
+          "examples": [
+            "계획 → 실행 → 모니터링 → 평가 → 시정 → 업데이트"
+          ]
+        },
+        "mechanism_en": {
+          "type": "string",
+          "description": "영문 메커니즘 - 현상이 발생하는 물리적/화학적 원리"
+        },
+        "mechanism_ko": {
+          "type": "string",
+          "description": "한글 메커니즘 - 현상이 발생하는 물리적/화학적 원리"
+        },
+        "consequences_en": {
+          "type": "string",
+          "description": "영문 결과 - 이 현상/개념이 초래하는 영향"
+        },
+        "consequences_ko": {
+          "type": "string",
+          "description": "한글 결과 - 이 현상/개념이 초래하는 영향"
+        },
+        "mitigation_en": {
+          "type": "string",
+          "description": "영문 완화 조치 - 부정적 영향을 줄이는 방법"
+        },
+        "mitigation_ko": {
+          "type": "string",
+          "description": "한글 완화 조치 - 부정적 영향을 줄이는 방법"
+        },
+        "detectability_en": {
+          "type": "string",
+          "description": "영문 감지 가능성 - 어떻게 탐지/검사하는가"
+        },
+        "detectability_ko": {
+          "type": "string",
+          "description": "한글 감지 가능성 - 어떻게 탐지/검사하는가"
+        },
+        "regulatoryBasis_en": {
+          "type": "string",
+          "description": "영문 규제 근거 - 관련 규제 요구사항"
+        },
+        "regulatoryBasis_ko": {
+          "type": "string",
+          "description": "한글 규제 근거 - 관련 규제 요구사항"
+        }
+      },
+      "additionalProperties": true
+    },
+    "examples": {
+      "type": "array",
+      "description": "사용 예문 (영/한) - 사용 맥락/패턴 학습 + 답변 예시 생성에 도움",
+      "items": {
+        "type": "object",
+        "properties": {
+          "en": {
+            "type": "string",
+            "description": "영문 예문"
+          },
+          "ko": {
+            "type": "string",
+            "description": "한글 예문"
+          }
+        },
+        "required": [
+          "en",
+          "ko"
+        ]
+      },
+      "examples": [
+        [
+          {
+            "en": "The plant updated its AMP for buried piping.",
+            "ko": "발전소는 매설 배관 AMP를 개정했다."
+          }
+        ]
+      ]
+    },
+    "synonyms": {
+      "type": "object",
+      "description": "동의어 (영/한) - 사용자 질의 정규화용",
+      "properties": {
+        "en": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "영문 동의어 목록"
+        },
+        "ko": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "한글 동의어 목록"
+        }
+      }
+    },
+    "negatives": {
+      "type": "array",
+      "description": "약어 충돌 방지용 부정 키워드 - 같은 철자지만 다른 의미(예: AMP=웹 Accelerated Mobile Pages, 생화학 Adenosine monophosphate) 배제. 부정 키워드가 포함된 문서는 validator를 통과할 수 없으므로 HITL(Human-in-the-Loop)을 통해 보충",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        [
+          "Accelerated Mobile Pages",
+          "Adenosine monophosphate",
+          "Asset Management Plan"
+        ]
+      ]
+    },
+    "domain": {
+      "type": "array",
+      "description": "도메인 태그 - 검색 필터/부스팅에 활용",
+      "items": {
+        "type": "string",
+        "enum": [
+          "nuclear",
+          "LTO",
+          "safety",
+          "materials",
+          "inspection",
+          "regulation",
+          "engineering",
+          "chemistry",
+          "physics",
+          "maintenance",
+          "QA",
+          "licensing",
+          "TLAA",
+          "AMP",
+          "other"
+        ]
+      },
+      "examples": [
+        [
+          "nuclear",
+          "LTO",
+          "safety"
+        ]
+      ]
+    },
+    "relatedTerms": {
+      "type": "array",
+      "description": "연관 용어 (키워드/약어) - KG로 관계 연결 (예: AMP ↔ AMR, TLAA)",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        [
+          "AMR",
+          "TLAA",
+          "LTO",
+          "PSR"
+        ]
+      ]
+    },
+    "relations": {
+      "type": "array",
+      "description": "SKOS(분류체계 지식 표준) 및 온톨로지 관계 규칙 반영. EU AI Act Article 11, 12의 기술 문서화 및 추적성을 반영한 설계",
+      "items": {
+        "type": "object",
+        "required": [
+          "relationType",
+          "target"
+        ],
+        "properties": {
+          "relationType": {
+            "type": "string",
+            "description": "관계 유형",
+            "enum": [
+              "skos:broader",
+              "skos:narrower",
+              "skos:related",
+              "skos:exactMatch",
+              "skos:closeMatch",
+              "onto:is_a",
+              "onto:part_of",
+              "onto:has_part",
+              "onto:causes",
+              "onto:prevents",
+              "onto:requires",
+              "onto:implements"
+            ],
+            "examples": [
+              "skos:related",
+              "onto:is_a",
+              "onto:has_part"
+            ]
+          },
+          "target": {
+            "type": "string",
+            "description": "대상 TERM 엔트리의 termId (외래 키). 강타입 URN 형식 필수",
+            "pattern": "^term:(class|rel|rule):[a-zA-Z0-9][a-zA-Z0-9_.-]*$",
+            "examples": [
+              "term:class:aging_management_review",
+              "term:class:inspection",
+              "term:rel:requires"
+            ]
+          },
+          "source": {
+            "type": "array",
+            "description": "관계의 출처 (DOC baseline과 상호보완, 추적성 보장)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "docId": {
+                  "type": "string",
+                  "description": "문서의 documentId (DOC baseline 참조)"
+                },
+                "blockId": {
+                  "type": "string",
+                  "description": "출처 블록의 blockId"
+                }
+              },
+              "required": [
+                "docId"
+              ]
+            }
+          },
+          "note": {
+            "type": "string",
+            "description": "관계에 대한 설명 또는 맥락 정보"
+          },
+          "confidence": {
+            "type": "number",
+            "description": "관계의 신뢰도 (자동 추출 시)",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "taxonomyBindings": {
+      "type": "array",
+      "description": "TERM의 분류체계를 DOC에 binding. Self-Query Retriever를 위한 제어 어휘 연결",
+      "items": {
+        "type": "object",
+        "required": [
+          "dimension",
+          "code"
+        ],
+        "properties": {
+          "dimension": {
+            "type": "string",
+            "description": "DOC 스키마에 정의된 메타데이터 차원 (예: metadata.dc:coverage.TLAACategory)",
+            "examples": [
+              "TLAACategory",
+              "programType",
+              "material",
+              "system"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "dimension 안에 실제로 들어가는 값",
+            "examples": [
+              "AMP",
+              "피로",
+              "316SS"
+            ]
+          },
+          "description_en": {
+            "type": "string",
+            "description": "영문 설명 - HITL을 위한 검수용 텍스트"
+          },
+          "description_ko": {
+            "type": "string",
+            "description": "한글 설명 - HITL을 위한 검수용 텍스트"
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "description": "용어 출처 및 큐레이션 이력 (감사성 보장)",
+      "properties": {
+        "sources": {
+          "type": "array",
+          "description": "용어가 추출된 원본 문서 목록",
+          "items": {
+            "type": "object",
+            "properties": {
+              "docId": {
+                "type": "string",
+                "description": "DOC baseline의 documentId"
+              },
+              "blockId": {
+                "type": "string",
+                "description": "추출된 블록의 blockId"
+              },
+              "extractedText": {
+                "type": "string",
+                "description": "추출된 원문 텍스트"
+              },
+              "extractionMethod": {
+                "type": "string",
+                "enum": [
+                  "manual",
+                  "automated",
+                  "hybrid"
+                ],
+                "description": "추출 방법"
+              },
+              "extractionDate": {
+                "type": "string",
+                "format": "date-time",
+                "description": "추출 일시"
+              }
+            }
+          }
+        },
+        "curationLog": {
+          "type": "array",
+          "description": "큐레이션 이력 (Landing Zone → Curation Area → SSoT)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "stage": {
+                "type": "string",
+                "enum": [
+                  "landing",
+                  "curation",
+                  "validation",
+                  "ssot"
+                ]
+              },
+              "action": {
+                "type": "string",
+                "description": "수행된 작업 (예: merge, validate, approve)"
+              },
+              "performer": {
+                "type": "string",
+                "description": "작업 수행자 (사람 또는 시스템)"
+              },
+              "comments": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "mergeHistory": {
+          "type": "array",
+          "description": "병합 이력 - Curation Area에서 여러 후보를 병합한 기록",
+          "items": {
+            "type": "object",
+            "properties": {
+              "mergedFrom": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "병합된 후보 ID 목록"
+              },
+              "mergeDate": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "mergeReason": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "vocabularyEdit": {
+      "type": "object",
+      "description": "Vocabulary Edit 정보 - LLM 토크나이저에 추가할 스페셜 토큰 정의",
+      "properties": {
+        "specialToken": {
+          "type": "string",
+          "description": "토크나이저에 추가할 토큰 (예: <AMP>)",
+          "examples": [
+            "<AMP>",
+            "<SCC>",
+            "<PSR>"
+          ]
+        },
+        "tokenizationRule": {
+          "type": "string",
+          "description": "토큰화 규칙 (예: 약어 뒤에 괄호로 풀네임 강제)",
+          "examples": [
+            "AMP (Aging Management Program)"
+          ]
+        },
+        "embeddingUpdate": {
+          "type": "boolean",
+          "description": "임베딩 업데이트 필요 여부",
+          "default": false
+        }
+      }
+    },
+    "qualityMetrics": {
+      "type": "object",
+      "description": "용어 품질 메트릭 (Data-Centric AI)",
+      "properties": {
+        "completeness": {
+          "type": "number",
+          "description": "필수 필드 완성도 (0-1)",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "consistency": {
+          "type": "number",
+          "description": "내부 일관성 점수 (0-1)",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "expertValidated": {
+          "type": "boolean",
+          "description": "도메인 전문가 검증 완료 여부",
+          "default": false
+        },
+        "usageFrequency": {
+          "type": "integer",
+          "description": "문서 코퍼스 내 사용 빈도",
+          "minimum": 0
+        },
+        "lastReviewDate": {
+          "type": "string",
+          "format": "date",
+          "description": "마지막 검토 일자"
+        }
+      }
+    },
+    "version": {
+      "type": "string",
+      "description": "용어 엔트리 버전 (Semantic Versioning)",
+      "pattern": "^\\d+\\.\\d+$",
+      "examples": [
+        "1.0",
+        "1.1",
+        "2.0"
+      ]
+    },
+    "lastUpdated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "최종 수정 일시 (ISO 8601)",
+      "examples": [
+        "2025-11-13T00:00:00Z"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "description": "용어 상태 (신뢰도와 완성도에 따른 구분: Candidate=후보, Anchored=신뢰확보, Mature=완성, Rejected=반려)",
+      "enum": [
+        "candidate",
+        "anchored",
+        "mature",
+        "rejected"
+      ],
+      "default": "candidate"
+    },
+    "extensions": {
+      "type": "object",
+      "description": "도메인 특화 확장 필드 (유연성 제공)",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

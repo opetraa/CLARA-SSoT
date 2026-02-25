@@ -1,6 +1,6 @@
-from src.clara_ssot.normalization.term_mapper import extract_term_candidates
-from src.clara_ssot.normalization.doc_mapper import build_doc_baseline
-from src.clara_ssot.parsing.pdf_parser import parse_pdf
+from src.tractara.normalization.term_mapper import extract_term_candidates
+from src.tractara.normalization.doc_mapper import build_doc_baseline
+from src.tractara.parsing.pdf_parser import parse_pdf
 from pathlib import Path
 import os
 from dotenv import load_dotenv

@@ -17,7 +17,7 @@
 
 ---
 
-## CLARA-SSoT 특화: 코드-문서 동기화
+## Tractara 특화: 코드-문서 동기화
 
 ### 코드 변경 후 필수 확인
 | 변경 대상 | 업데이트 대상 |
@@ -32,7 +32,7 @@
 - 변경된 단계의 입출력 스키마 명시
 
 ### API 엔드포인트 추가 시 체크리스트
-- [ ] 라우터 파일 위치: `src/clara_ssot/api/`
+- [ ] 라우터 파일 위치: `src/tractara/api/`
 - [ ] Pydantic 요청/응답 모델 정의 (타입 힌트 필수)
 - [ ] 에러는 `ProblemDetails` + `MachineReadableError` 형태로 반환
 - [ ] 테스트 작성 (`tests/`)

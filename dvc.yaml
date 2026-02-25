@@ -1,8 +1,8 @@
 stages:
   prepare_data:
-    cmd: python src/clara_ssot/scripts/prepare_data.py
+    cmd: python src/tractara/scripts/prepare_data.py
     deps:
-      - src/clara_ssot/scripts/prepare_data.py
+      - src/tractara/scripts/prepare_data.py
       - data/raw
     params:
       - prepare.sample_size
@@ -11,17 +11,17 @@ stages:
       - data/prepared
 
   parse_documents:
-    cmd: python src/clara_ssot/parsing/pdf_parser.py
+    cmd: python src/tractara/parsing/pdf_parser.py
     deps:
-      - src/clara_ssot/parsing/pdf_parser.py
+      - src/tractara/parsing/pdf_parser.py
       - data/prepared
     outs:
       - data/parsed
 
   validate_terms:
-    cmd: python src/clara_ssot/validation/term_validator.py
+    cmd: python src/tractara/validation/term_validator.py
     deps:
-      - src/clara_ssot/validation/term_validator.py
+      - src/tractara/validation/term_validator.py
       - data/parsed
     params:
       - validation.rules
@@ -29,18 +29,18 @@ stages:
       - data/validated
 
   normalize_data:
-    cmd: python src/clara_ssot/normalization/term_mapper.py
+    cmd: python src/tractara/normalization/term_mapper.py
     deps:
-      - src/clara_ssot/normalization/term_mapper.py
+      - src/tractara/normalization/term_mapper.py
       - data/validated
     outs:
       - data/normalized
 
   build_ssot:
-    cmd: python src/clara_ssot/ssot/build_repository.py
+    cmd: python src/tractara/ssot/build_repository.py
     deps:
-      - src/clara_ssot/ssot/doc_ssot_repository.py
-      - src/clara_ssot/ssot/term_ssot_repository.py
+      - src/tractara/ssot/doc_ssot_repository.py
+      - src/tractara/ssot/term_ssot_repository.py
       - data/normalized
     outs:
       - data/ssot

@@ -3,12 +3,12 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from pathlib import Path
-from clara_ssot.parsing.pdf_parser import parse_pdf, ParsedDocument, ParsedBlock, BoundingBox
-from clara_ssot.normalization.term_mapper import extract_term_candidates, TermCandidate
+from tractara.parsing.pdf_parser import parse_pdf, ParsedDocument, ParsedBlock, BoundingBox
+from tractara.normalization.term_mapper import extract_term_candidates, TermCandidate
 
 
-@patch("clara_ssot.parsing.pdf_parser.DoclingParser")
-@patch("clara_ssot.parsing.pdf_parser.PyMuPDFCoordinateExtractor")
+@patch("tractara.parsing.pdf_parser.DoclingParser")
+@patch("tractara.parsing.pdf_parser.PyMuPDFCoordinateExtractor")
 def test_docling_pymupdf_parsing(MockPyMuPDF, MockDocling):
     """Docling+PyMuPDF 멀티엔진 테스트 (Mocked)"""
     pdf_path = Path("data/test_sample.pdf")
@@ -54,10 +54,10 @@ def test_docling_pymupdf_parsing(MockPyMuPDF, MockDocling):
         assert table_blocks[0].table_data is not None
 
 
-@patch("clara_ssot.normalization.term_mapper.LLMTermExtractor")
+@patch("tractara.normalization.term_mapper.LLMTermExtractor")
 def test_llm_term_extraction(MockLLMExtractor):
     """LLM TERM 추출 테스트 (Mocked)"""
-    from clara_ssot.models.term_types import TermType
+    from tractara.models.term_types import TermType
 
     # Mock은 (List[TermCandidate], List[str]) 튜플을 반환해야 한다
     mock_extractor_instance = MockLLMExtractor.return_value

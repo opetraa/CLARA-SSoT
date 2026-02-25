@@ -1,6 +1,6 @@
 {
   "documentId": "DOC_261125aad5b3402db817671182896b92",
-  "$schema": "https://clara-ssot.org/schemas/doc-baseline/v1.0.0",
+  "$schema": "https://tractara.org/schemas/doc-baseline/v1.0.0",
   "version": "1.0.0",
   "lastUpdated": "2026-02-25T20:28:32.512367Z",
   "metadata": {
@@ -45,7 +45,7 @@
     }
   },
   "provenance": {
-    "sourceFile": "/workspaces/CLARA-SSoT/data/NUREG_CR-5704_sample.pdf",
+    "sourceFile": "/workspaces/Tractara/data/NUREG_CR-5704_sample.pdf",
     "extractionMetadata": {
       "parserVersion": "2.0.0",
       "extractionDate": "2026-02-25T20:28:32.512367Z",

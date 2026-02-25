@@ -1,9 +1,9 @@
 @echo off
 chcp 65001 > nul
-title CLARA-SSoT Swagger UI Launcher
+title Tractara Swagger UI Launcher
 
 echo ================================================================
-echo           CLARA-SSoT Swagger UI Launcher
+echo           Tractara Swagger UI Launcher
 echo ================================================================
 echo.
 

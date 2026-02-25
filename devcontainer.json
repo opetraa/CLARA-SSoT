@@ -1,8 +1,8 @@
 {
-    "name": "CLARA-SSoT Dev Container",
+    "name": "Tractara Dev Container",
     "dockerComposeFile": "../docker-compose.yml",
-    "service": "clara-ssot-api",
-    "workspaceFolder": "/workspaces/CLARA-SSoT",
+    "service": "tractara-api",
+    "workspaceFolder": "/workspaces/Tractara",
     "customizations": {
         "vscode": {
             "extensions": [

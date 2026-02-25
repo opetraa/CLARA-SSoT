@@ -10,7 +10,7 @@ from pptx import Presentation
 # ==============================================================================
 # 🚨 여기가 핵심: 무조건 이 경로 기준으로만 동작하게 강제 설정
 # ==============================================================================
-BASE_DIR = "/workspaces/clara-ssot"
+BASE_DIR = "/workspaces/tractara"
 
 
 def get_safe_path(filename: str) -> str:
@@ -37,7 +37,7 @@ def get_safe_path(filename: str) -> str:
 
 
 # 서버 인스턴스 생성
-mcp = FastMCP("clara-ssot-integrator")
+mcp = FastMCP("tractara-integrator")
 
 # ==============================================================================
 # 1. PPTX Reader
@@ -53,7 +53,7 @@ def read_working_deck(filename: str) -> str:
         # 경로 자동 보정
         target_path = get_safe_path(filename)
 
-        # PPTX는 하위 폴더(WorkingDeck/CLARA-SSoT)에 있을 수 있으므로
+        # PPTX는 하위 폴더(WorkingDeck/Tractara)에 있을 수 있으므로
         # 파일이 없으면 재귀적으로 찾기 (편의성 기능)
         if not os.path.exists(target_path):
             found = False

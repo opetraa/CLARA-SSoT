@@ -1,0 +1,911 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Tractara DOC Baseline Schema",
+  "description": "고규제 도메인을 위한 SSoT(Single Source of Truth) 기반 문서 스키마. DCMES, JATS, Schema.org 표준을 기반으로 원자력 및 고신뢰성 도메인의 추적성, 검증가능성, 감사성을 보장",
+  "version": "1.0.0",
+  "type": "object",
+  "required": [
+    "documentId",
+    "$schema",
+    "version",
+    "metadata",
+    "content"
+  ],
+  "properties": {
+    "documentId": {
+      "type": "string",
+      "description": "문서의 전역 고유 식별자 (UUID 또는 도메인 특화 ID)",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "examples": [
+        "DOC-PSR-HU1-2024-001",
+        "uuid:550e8400-e29b-41d4-a716-446655440000"
+      ]
+    },
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema 버전 참조",
+      "default": "https://tractara.org/schemas/doc-baseline/v1.0.0"
+    },
+    "version": {
+      "type": "string",
+      "description": "문서 스키마 버전 (Semantic Versioning)",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": [
+        "1.0.0",
+        "2.1.3"
+      ]
+    },
+    "lastUpdated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "최종 수정 일시 (ISO 8601 형식)",
+      "examples": [
+        "2024-11-14T09:30:00Z"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "DCMES(Dublin Core) 기반 메타데이터 - 문서 발견 및 분류를 위한 핵심 정보",
+      "required": [
+        "dc:title",
+        "dc:type",
+        "dc:language"
+      ],
+      "properties": {
+        "dc:title": {
+          "type": "string",
+          "description": "문서 제목",
+          "minLength": 1,
+          "examples": [
+            "한울 1호기 정기안전성평가(PSR) 보고서"
+          ]
+        },
+        "dc:creator": {
+          "type": "array",
+          "description": "콘텐츠의 주요 지적 책임자 목록 (Prepared by / 작성자만 포함. 검토자·승인자·PM은 dc:contributor로)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "entityType": {
+                "type": "string",
+                "enum": [
+                  "person",
+                  "organization"
+                ]
+              },
+              "affiliation": {
+                "type": "string",
+                "description": "소속 기관명 (entityType=person 일 때)"
+              },
+              "organizationType": {
+                "type": "string",
+                "enum": [
+                  "utility",
+                  "vendor",
+                  "regulator",
+                  "national_lab",
+                  "corporate_research"
+                ],
+                "description": "기관 유형 (entityType=organization 일 때)"
+              },
+              "orcid": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]$"
+              }
+            },
+            "required": [
+              "name",
+              "entityType"
+            ]
+          }
+        },
+        "dc:contributor": {
+          "type": "array",
+          "description": "검토자·승인자·PM·협력 기관 등 비창작 기여자 목록",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "entityType": {
+                "type": "string",
+                "enum": [
+                  "person",
+                  "organization"
+                ]
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "reviewer",
+                  "approver",
+                  "project_manager",
+                  "contributor"
+                ]
+              },
+              "affiliation": {
+                "type": "string",
+                "description": "소속 기관명 (entityType=person 일 때)"
+              },
+              "organizationType": {
+                "type": "string",
+                "enum": [
+                  "utility",
+                  "vendor",
+                  "regulator",
+                  "national_lab",
+                  "corporate_research"
+                ],
+                "description": "기관 유형 (entityType=organization 일 때)"
+              }
+            },
+            "required": [
+              "name",
+              "entityType"
+            ]
+          }
+        },
+        "dc:publisher": {
+          "type": "array",
+          "description": "발행 주체 목록 (Prepared for / Funded by / Sponsored by 포함, DC Dumb-Down 적용)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "publisher",
+                  "sponsor"
+                ],
+                "description": "publisher: 발행·발주 기관 | sponsor: 재정 지원 기관"
+              },
+              "organizationType": {
+                "type": "string",
+                "enum": [
+                  "utility",
+                  "vendor",
+                  "regulator",
+                  "national_lab",
+                  "corporate_research"
+                ]
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        },
+        "dc:date": {
+          "type": "object",
+          "description": "문서 관련 날짜 정보",
+          "properties": {
+            "created": {
+              "type": "string",
+              "format": "date"
+            },
+            "issued": {
+              "type": "string",
+              "format": "date"
+            },
+            "modified": {
+              "type": "string",
+              "format": "date"
+            },
+            "valid": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        },
+        "dc:type": {
+          "type": "string",
+          "description": "문서 유형 (제어 어휘)",
+          "enum": [
+            "TechnicalReport",
+            "RegulatoryDocument",
+            "SafetyAnalysisReport",
+            "PeriodicSafetyReview",
+            "LicenseRenewalApplication",
+            "Code",
+            "Standard",
+            "Procedure",
+            "LicenseeEventReport",
+            "RegulatoryAuditItem",
+            "JournalArticle",
+            "Patent",
+            "Other"
+          ]
+        },
+        "dc:format": {
+          "type": "string",
+          "description": "원본 문서 형식 (MIME type)",
+          "examples": [
+            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          ]
+        },
+        "dc:identifier": {
+          "type": "array",
+          "description": "외부 식별자 (DOI, URI, ISBN 등)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "scheme": {
+                "type": "string",
+                "enum": [
+                  "DOI",
+                  "URI",
+                  "ISBN",
+                  "ISSN",
+                  "DOCKET"
+                ]
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "dc:language": {
+          "type": "string",
+          "description": "문서 주 언어 (ISO 639-1)",
+          "pattern": "^[a-z]{2}$",
+          "examples": [
+            "ko",
+            "en"
+          ]
+        },
+        "dc:subject": {
+          "type": "array",
+          "description": "주제 키워드 또는 분류",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "피로 평가",
+              "응력부식균열",
+              "노화관리"
+            ]
+          ]
+        },
+        "dc:coverage": {
+          "type": "object",
+          "description": "문서의 적용 범위 (원자력 도메인 특화)",
+          "properties": {
+            "nuclearPlant": {
+              "type": "string",
+              "description": "대상 원자력 발전소",
+              "examples": [
+                "한울 1호기",
+                "고리 3호기"
+              ]
+            },
+            "system": {
+              "type": "string",
+              "description": "대상 계통 (system)",
+              "examples": [
+                "원자로냉각재계통",
+                "비상노심냉각계통"
+              ]
+            },
+            "component": {
+              "type": "string",
+              "description": "대상 기기 또는 부품",
+              "examples": [
+                "증기발생기",
+                "원자로압력용기"
+              ]
+            },
+            "material": {
+              "type": "string",
+              "description": "관련 재료",
+              "examples": [
+                "316SS",
+                "SA508 Gr.3",
+                "Inconel 600"
+              ]
+            },
+            "TLAACategory": {
+              "type": "string",
+              "description": "시간제한 노화분석 범주",
+              "enum": [
+                "피로",
+                "중성자조사취화",
+                "응력부식균열",
+                "부식",
+                "크리프",
+                "열화",
+                "기타"
+              ]
+            },
+            "spatialCoverage": {
+              "type": "string",
+              "description": "공간적 범위",
+              "examples": [
+                "Korea",
+                "USA"
+              ]
+            },
+            "temporalCoverage": {
+              "type": "string",
+              "description": "시간적 범위",
+              "examples": [
+                "2020-2024",
+                "Cycle 25"
+              ]
+            }
+          }
+        },
+        "dc:rights": {
+          "type": "object",
+          "description": "저작권 및 접근 권한",
+          "properties": {
+            "license": {
+              "type": "string"
+            },
+            "accessRights": {
+              "type": "string",
+              "enum": [
+                "public",
+                "restricted",
+                "confidential",
+                "classified"
+              ]
+            },
+            "rightsHolder": {
+              "type": "string"
+            }
+          }
+        },
+        "dc:relation": {
+          "type": "array",
+          "description": "관련 문서 참조 (간단한 링크, 상세한 관계는 relations 배열 사용)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "relationType": {
+                "type": "string"
+              },
+              "targetDocumentId": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "description": "문서 출처 및 검증 이력 (감사성 보장)",
+      "properties": {
+        "sourceFile": {
+          "type": "string",
+          "description": "원본 파일 경로 또는 URI"
+        },
+        "sourceChecksum": {
+          "type": "object",
+          "description": "원본 파일 무결성 검증",
+          "properties": {
+            "algorithm": {
+              "type": "string",
+              "enum": [
+                "SHA256",
+                "MD5"
+              ]
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        "extractionMetadata": {
+          "type": "object",
+          "description": "파싱 및 추출 정보",
+          "properties": {
+            "parserVersion": {
+              "type": "string"
+            },
+            "extractionDate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "ocrApplied": {
+              "type": "boolean"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "validationStatus": {
+          "type": "string",
+          "description": "검증 상태",
+          "enum": [
+            "draft",
+            "partial",
+            "validated",
+            "approved",
+            "deprecated"
+          ]
+        },
+        "validationLog": {
+          "type": "array",
+          "description": "검증 이력",
+          "items": {
+            "type": "object",
+            "properties": {
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "validator": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "comments": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "curationHistory": {
+          "type": "array",
+          "description": "큐레이션 이력 (Landing Zone → Curation Area → SSoT)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string",
+                "enum": [
+                  "landing",
+                  "curation",
+                  "ssot"
+                ]
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "type": "string"
+              },
+              "performer": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "content": {
+      "type": "array",
+      "description": "문서 본문 내용 - JATS 계층 구조 기반의 의미적 블록 배열",
+      "items": {
+        "type": "object",
+        "required": [
+          "blockId",
+          "blockType",
+          "text"
+        ],
+        "properties": {
+          "blockId": {
+            "type": "string",
+            "description": "블록의 고유 식별자 (문서 내 상대 ID)",
+            "examples": [
+              "block-001",
+              "sec-2.3.1"
+            ]
+          },
+          "parentId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "부모 블록 ID (계층 구조 표현을 위한 외래 키)",
+            "examples": [
+              "block-000",
+              null
+            ]
+          },
+          "blockType": {
+            "type": "string",
+            "description": "블록 유형 (JATS 기반 확장)",
+            "enum": [
+              "title",
+              "abstract",
+              "section",
+              "subsection",
+              "paragraph",
+              "list",
+              "listItem",
+              "table",
+              "figure",
+              "equation",
+              "code",
+              "procedure",
+              "procedureStep",
+              "reference",
+              "appendix",
+              "footnote",
+              "caption"
+            ]
+          },
+          "sectionLabel": {
+            "type": "string",
+            "description": "섹션 번호 또는 레이블",
+            "examples": [
+              "1.2.3",
+              "Appendix A"
+            ]
+          },
+          "sectionTitle": {
+            "type": "string",
+            "description": "섹션 제목",
+            "examples": [
+              "피로 평가 방법론"
+            ]
+          },
+          "level": {
+            "type": "integer",
+            "description": "계층 깊이 (0: 문서 제목, 1: 대제목, 2: 중제목... 본문은 999)",
+            "minimum": 0
+          },
+          "contextPath": {
+            "type": "array",
+            "description": "상위 섹션 경로 (Breadcrumb) - 검색 및 LLM 문맥 보강용",
+            "items": {
+              "type": "string"
+            },
+            "examples": [
+              ["1. 서론", "1.1 배경"],
+              ["2. 본론", "2.1 실험 방법"]
+            ]
+          },
+          "text": {
+            "type": "string",
+            "description": "블록의 텍스트 내용 (플레인 텍스트 또는 경량 마크다운)"
+          },
+          "bbox": {
+            "type": "object",
+            "description": "원본 PDF에서의 좌표 정보 (추적성 보장)",
+            "properties": {
+              "x0": {
+                "type": "number",
+                "description": "왼쪽 하단 X 좌표"
+              },
+              "y0": {
+                "type": "number",
+                "description": "왼쪽 하단 Y 좌표"
+              },
+              "x1": {
+                "type": "number",
+                "description": "오른쪽 상단 X 좌표"
+              },
+              "y1": {
+                "type": "number",
+                "description": "오른쪽 상단 Y 좌표"
+              },
+              "page": {
+                "type": "integer",
+                "description": "페이지 번호 (1-based)"
+              }
+            },
+            "required": [
+              "x0",
+              "y0",
+              "x1",
+              "y1",
+              "page"
+            ]
+          },
+          "extractionConfidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "추출 신뢰도 (TableFormer 등에서 제공)"
+          },
+          "structuredContent": {
+            "type": "object",
+            "description": "절차서의 구조화된 내용 (ACT-R 인지 구조 맵핑)",
+            "properties": {
+              "condition": {
+                "type": "string",
+                "description": "조건 (Condition)"
+              },
+              "action": {
+                "type": "string",
+                "description": "행동 (Action)"
+              },
+              "acceptanceCriterion": {
+                "type": "string",
+                "description": "허용 기준 (Acceptance Criterion)"
+              }
+            }
+          },
+          "tableData": {
+            "type": "object",
+            "description": "표 데이터 (blockType이 'table'일 때)",
+            "properties": {
+              "headers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "rows": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "figureData": {
+            "type": "object",
+            "description": "그림 데이터 (blockType이 'figure'일 때)",
+            "properties": {
+              "imageUri": {
+                "type": "string"
+              },
+              "imageFormat": {
+                "type": "string"
+              },
+              "caption": {
+                "type": "string"
+              },
+              "alt": {
+                "type": "string"
+              }
+            }
+          },
+          "relatedTerms": {
+            "type": "array",
+            "description": "이 블록에서 언급된 TERM baseline의 용어들 (외래 키)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "termId": {
+                  "type": "string",
+                  "description": "TERM baseline의 기본 키 참조. 강타입 URN 형식 필수 (term:class: | term:rel: | term:rule:)",
+                  "pattern": "^term:(class|rel|rule):[a-zA-Z0-9][a-zA-Z0-9_.-]*$"
+                },
+                "mentionContext": {
+                  "type": "string",
+                  "description": "용어가 언급된 문맥"
+                }
+              },
+              "required": [
+                "termId"
+              ]
+            }
+          },
+          "embeddings": {
+            "type": "object",
+            "description": "벡터 임베딩 (RAG용, 선택적)",
+            "properties": {
+              "model": {
+                "type": "string"
+              },
+              "vector": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "annotations": {
+            "type": "array",
+            "description": "도메인 전문가 주석",
+            "items": {
+              "type": "object",
+              "properties": {
+                "annotator": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "comment",
+                    "correction",
+                    "highlight",
+                    "question"
+                  ]
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "relations": {
+      "type": "array",
+      "description": "문서 간 또는 블록 간 명시적 관계 (Knowledge Graph 엣지 생성용)",
+      "items": {
+        "type": "object",
+        "required": [
+          "relationType",
+          "target"
+        ],
+        "properties": {
+          "sourceBlockId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "관계의 출발 블록 (null이면 문서 전체)"
+          },
+          "relationType": {
+            "type": "string",
+            "description": "관계 유형 (제어 어휘)",
+            "enum": [
+              "CITES",
+              "REFERENCES",
+              "IS_CITED_BY",
+              "SUPERSEDES",
+              "IS_SUPERSEDED_BY",
+              "SUPPLEMENTS",
+              "IS_SUPPLEMENTED_BY",
+              "REQUIRES",
+              "IS_REQUIRED_BY",
+              "RELATED_TO",
+              "DERIVES_FROM",
+              "HAS_VERSION",
+              "IMPLEMENTS",
+              "CONTRADICTS"
+            ]
+          },
+          "target": {
+            "type": "string",
+            "description": "대상 문서 ID 또는 외부 URI (정규화된 형식)"
+          },
+          "targetBlockId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "대상 블록 ID (특정 블록 참조 시)"
+          },
+          "citationText": {
+            "type": "string",
+            "description": "인용 원문 텍스트 (검증자 확인용)"
+          },
+          "confidence": {
+            "type": "number",
+            "description": "관계의 신뢰도 (자동 추출 시)",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "qualityMetrics": {
+      "type": "object",
+      "description": "데이터 품질 메트릭 (Data-Centric AI)",
+      "properties": {
+        "completeness": {
+          "type": "number",
+          "description": "필수 필드 완성도 (0-1)",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "consistency": {
+          "type": "number",
+          "description": "내부 일관성 점수 (0-1)",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "readabilityScore": {
+          "type": "number",
+          "description": "가독성 점수"
+        },
+        "technicalAccuracy": {
+          "type": "object",
+          "description": "기술적 정확성 평가",
+          "properties": {
+            "reviewedBy": {
+              "type": "string"
+            },
+            "score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "comments": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "regulatoryCompliance": {
+      "type": "object",
+      "description": "규제 준수 정보 (EU AI Act, US NRC, UK ONR 등)",
+      "properties": {
+        "applicableRegulations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "framework": {
+                "type": "string",
+                "enum": [
+                  "EU_AI_Act",
+                  "US_NRC",
+                  "UK_ONR",
+                  "CNSC",
+                  "IAEA"
+                ]
+              },
+              "article": {
+                "type": "string"
+              },
+              "complianceStatus": {
+                "type": "string",
+                "enum": [
+                  "compliant",
+                  "partial",
+                  "non-compliant",
+                  "not-applicable"
+                ]
+              }
+            }
+          }
+        },
+        "riskLevel": {
+          "type": "string",
+          "description": "EU AI Act 기준 위험 수준",
+          "enum": [
+            "minimal",
+            "limited",
+            "high",
+            "unacceptable"
+          ]
+        },
+        "transparencyRequirements": {
+          "type": "object",
+          "description": "투명성 요구사항 충족",
+          "properties": {
+            "technicalDocumentation": {
+              "type": "boolean"
+            },
+            "dataGovernance": {
+              "type": "boolean"
+            },
+            "traceability": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "description": "도메인 특화 확장 필드 (유연성 제공)",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
