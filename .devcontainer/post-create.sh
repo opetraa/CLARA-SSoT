@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "🚀 Setting up CLARA-SSoT development environment..."
+echo "🚀 Setting up Tractara development environment..."
 
 # Git 설정 (이미 있으면 덮어쓰지 않기)
 if ! git config --global user.name >/dev/null 2>&1; then

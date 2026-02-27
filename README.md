@@ -1,6 +1,6 @@
-# CLARA-SSoT
+# Tractara
 
-**CLARA-SSoT**는 규제가 강한 도메인(원자력, 의료 등)에서 쓸 수 있는
+**Tractara**는 규제가 강한 도메인(원자력, 의료 등)에서 쓸 수 있는
 데이터 중심 AI 아키텍처입니다.
 
 **PDF → DOC/TERM Baseline JSON → Landing/SSoT 저장**까지의
@@ -52,7 +52,7 @@ GEMINI.md                ← 자동 생성 (직접 편집 금지)
 ## 디렉터리 구조
 
 ```text
-CLARA-SSoT/
+Tractara/
 ├── .ai-rules/                  # AI 도구 공통 규칙 마스터
 ├── .github/workflows/          # CI/CD 파이프라인
 ├── .pre-commit-config.yaml     # pre-commit 훅 (format, lint, rules sync)
@@ -62,7 +62,7 @@ CLARA-SSoT/
 ├── scripts/
 │   └── sync_ai_rules.py        # AI 규칙 동기화 스크립트
 ├── src/
-│   └── clara_ssot/
+│   └── tractara/
 │       ├── api/
 │       │   ├── main.py         # FastAPI 앱 진입점
 │       │   └── pipeline.py     # Ingestion 파이프라인 오케스트레이터
@@ -167,7 +167,7 @@ curl -X POST "http://localhost:8000/ingest" -F "file=@document.pdf"
 ### Docker 사용
 
 ```bash
-make docker-up    # clara-ssot-api 컨테이너 실행 (port 8000)
+make docker-up    # tractara-api 컨테이너 실행 (port 8000)
 ```
 
 ---

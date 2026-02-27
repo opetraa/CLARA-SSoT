@@ -29,7 +29,7 @@ jobs:
 
       - name: Run tests
         run: |
-          poetry run pytest tests/ --cov=src/clara_ssot --cov-report=xml
+          poetry run pytest tests/ --cov=src/tractara --cov-report=xml
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
@@ -69,8 +69,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/clara-ssot:latest
-            ${{ secrets.DOCKER_USERNAME }}/clara-ssot:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/tractara:latest
+            ${{ secrets.DOCKER_USERNAME }}/tractara:${{ github.sha }}
 
       - name: Setup DVC
         run: |

@@ -3,7 +3,7 @@ M ?= chore: sync changes
 
 .PHONY: help install test lint format clean run run-ui docker-build docker-up docker-down \
         dvc-repro dvc-push dvc-pull dvc-status git-push git-pull \
-        dvc-add-push sync-all sync-rules ingest
+        dvc-add-push sync-all sync-rules ingest clean-data
 FILE ?=
 
 help:
@@ -30,7 +30,7 @@ install:
 	poetry install
 
 test:
-	poetry run pytest tests/ -v --cov=src/clara_ssot
+	poetry run pytest tests/ -v --cov=src/tractara
 
 lint:
 	poetry run pylint src/
@@ -46,16 +46,19 @@ clean:
 	find . -type d -name ".pytest_cache" -exec rm -r {} +
 	find . -type d -name ".mypy_cache" -exec rm -r {} +
 
+clean:
+	@python3 scripts/clean_data.py
+
 run:
-	poetry run uvicorn src.clara_ssot.api.main:app --reload --host 0.0.0.0 --port 8000
+	poetry run uvicorn src.tractara.api.main:app --reload --host 0.0.0.0 --port 8000
 
 run-ui:
 	@echo "API running on: http://127.0.0.1:8000/docs"
 	@echo "   (Swagger UI 실행)"
-	poetry run uvicorn src.clara_ssot.api.main:app --reload --host 0.0.0.0 --port 8000
+	poetry run uvicorn src.tractara.api.main:app --reload --host 0.0.0.0 --port 8000
 
 docker-build:
-	docker build -t clara-ssot:latest .
+	docker build -t tractara:latest .
 
 docker-up:
 	docker-compose up -d
@@ -125,7 +128,7 @@ ARGS = $(filter-out $@,$(MAKECMDGOALS))
 
 ingest:
 	@echo "📂 Starting bulk ingestion from /data folder..."
-	@poetry run python3 src/clara_ssot/scripts/ingest_bulk.py
+	@poetry run python3 src/tractara/scripts/ingest_bulk.py
 
 # 2. 뒤에 오는 인자들이 '존재하지 않는 명령어'라고 에러가 나지 않게 방지합니다.
 %:

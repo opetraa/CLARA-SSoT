@@ -3,7 +3,7 @@
 ## 모듈 구조
 
 ```
-src/clara_ssot/
+src/tractara/
 ├── api/
 │   ├── main.py                  # FastAPI 앱 진입점, 라우터 등록
 │   └── pipeline.py              # Ingestion 파이프라인 오케스트레이터

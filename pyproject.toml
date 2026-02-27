@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "clara-ssot"
+name = "tractara"
 version = "0.1.0"
 description = "Data-Centric AI Architecture for Highly Regulated Domains"
 authors = ["Gi-Bum Lee <kizarik@seoultech.ac.kr>"]
 readme = "README.md"
-packages = [{include = "clara_ssot", from = "src"}]
+packages = [{include = "tractara", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -33,6 +33,7 @@ pylint = "^3.0.2"
 mypy = "^1.7.0"
 pre-commit = "^3.5.0"
 dvc = {extras = ["s3", "gdrive"], version = "^3.30.1"}
+types-jsonschema = "^4.26.0.20260202"
 
 [build-system]
 requires = ["poetry-core"]
@@ -49,7 +50,10 @@ line_length = 88
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
-addopts = "-ra -q --cov=src/clara_ssot --cov-report=html --cov-report=term"
+addopts = "-ra -q --cov=src/tractara --cov-report=html --cov-report=term"
 markers = [
     "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
 ]
+
+[tool.mypy]
+ignore_missing_imports = true

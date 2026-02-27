@@ -1,0 +1,27 @@
+[MASTER]
+ignore=tests
+
+[MESSAGES CONTROL]
+# 구조적 리팩토링이 필요한 R-class 에러는 추후 별도 리팩토링으로 해결
+# W0511: TODO/FIXME 코멘트는 의도적으로 남긴 것이므로 무시
+# C0415: import-outside-toplevel은 lazy import 패턴 (docling, google 등)에 사용
+disable=
+    R0902,
+    R0903,
+    R0912,
+    R0914,
+    R0915,
+    R1702,
+    R1705,
+    R1731,
+    W0511,
+    W0107,
+    C0415,
+    C0114,
+    C0115,
+    C0116,
+    C0103,
+    C0327
+
+[FORMAT]
+max-line-length=120
