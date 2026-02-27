@@ -1,13 +1,13 @@
 {
   "type": "term_entry",
-  "termId": "term:class:austenitic_stainless_steels",
+  "termId": "term:class:coolant_environment",
   "termType": "TERM-CLASS",
-  "term": "Austenitic Stainless Steels",
+  "term": "Coolant Environment",
   "lang": "bilingual",
-  "headword_en": "Austenitic Stainless Steels",
-  "headword_ko": "오스테나이트계 스테인리스강",
-  "definition_en": "A specific class of stainless steels characterized by their austenitic crystal structure, known for high corrosion resistance and mechanical properties.",
-  "definition_ko": "높은 내식성과 기계적 성질로 알려진 오스테나이트 결정 구조를 특징으로 하는 스테인리스강의 한 종류.",
+  "headword_en": "Coolant Environment",
+  "headword_ko": "냉각재 환경",
+  "definition_en": "The specific chemical and physical conditions of the fluid used to remove heat from the nuclear reactor core.",
+  "definition_ko": "원자로 노심에서 열을 제거하기 위해 사용되는 유체의 특정 화학적 및 물리적 상태.",
   "slots": {
     "context_ko": "Effects of LWR Coolant Environments on Fatigue Design Curves of Austenitic Stainless Steels"
   },
@@ -15,7 +15,7 @@
   "negatives": [],
   "domain": [
     "nuclear",
-    "materials"
+    "safety"
   ],
   "relatedTerms": [],
   "relations": [],
