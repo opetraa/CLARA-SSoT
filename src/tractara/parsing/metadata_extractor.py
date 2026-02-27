@@ -73,6 +73,8 @@ _VALID_SCHEMES = frozenset({"DOI", "URI", "ISBN", "ISSN", "DOCKET"})
 
 # ── Pydantic 모델 (Track B LLM 출력 구조) ─────────────────────────────────────
 class ContributorItem(BaseModel):
+    """기여자/이해관계자 정보."""
+
     name: str
     entityType: str = Field(description="person | organization")
     role: str = Field(
@@ -92,6 +94,8 @@ class ContributorItem(BaseModel):
 
 
 class DateInfo(BaseModel):
+    """문서 관련 날짜 정보."""
+
     created: str | None = Field(None, description="작성 완료일 YYYY-MM-DD")
     issued: str | None = Field(None, description="공식 발행일 YYYY-MM-DD")
     modified: str | None = Field(None, description="최종 개정일 YYYY-MM-DD")
@@ -99,6 +103,8 @@ class DateInfo(BaseModel):
 
 
 class CoverageInfo(BaseModel):
+    """문서 적용 범위 정보."""
+
     nuclearPlant: str | None = None
     system: str | None = None
     component: str | None = None
@@ -108,6 +114,8 @@ class CoverageInfo(BaseModel):
 
 
 class IdentifierItem(BaseModel):
+    """문서 식별자 항목."""
+
     scheme: str | None = Field(
         None, description="DOI | URI | ISBN | ISSN | DOCKET 중 하나"
     )
@@ -115,6 +123,8 @@ class IdentifierItem(BaseModel):
 
 
 class LLMMetadata(BaseModel):
+    """Track B (LLM)에서 추출된 메타데이터 구조."""
+
     dc_title: str | None = Field(None, description="문서 공식 제목")
     dc_alternative_titles: list[str] | None = Field(
         None, description="부제 또는 영문/국문 병기 제목 등"
@@ -157,6 +167,8 @@ class _FrontBlock:
 # ── 결과 데이터 클래스 ────────────────────────────────────────────────────────
 @dataclass
 class ExtractedMetadata:
+    """최종 병합된 메타데이터 결과."""
+
     dc_title: str | None = None
     dc_alternative_titles: list[str] | None = None
     dc_identifier: list[dict[str, str]] | None = None
@@ -212,8 +224,7 @@ def _extract_frontmatter_blocks(
                     size = round(span["size"], 1)
                     # body_font_size 추정용: 전체 페이지에서 수집
                     font_sizes.append(size)
-                    if size > max_font_size:
-                        max_font_size = size
+                    max_font_size = max(max_font_size, size)
                     if span["flags"] & 16:  # bit 4 = bold
                         is_bold = True
 
@@ -433,12 +444,10 @@ def _run_track_b(blocks: list[_FrontBlock], api_key: str) -> LLMMetadata | None:
             response_model=LLMMetadata,
             max_retries=2,
         )
-        logger.info(
-            f"Track B 추출 성공: title={result.dc_title!r}, type={result.dc_type!r}"
-        )
+        logger.info("Track B 추출 성공: title=%r, type=%r", result.dc_title, result.dc_type)
         return result
-    except Exception as e:
-        logger.error(f"Track B LLM 호출 실패: {e}")
+    except (ValueError, KeyError, ConnectionError) as e:
+        logger.error("Track B LLM 호출 실패: %s", e)
         return None
 
 
@@ -584,7 +593,7 @@ def extract_metadata(
 
     blocks, body_font_size = _extract_frontmatter_blocks(pdf_path)
     logger.info(
-        f"Front-matter blocks: {len(blocks)}, body_font_size: {body_font_size}pt"
+        "Front-matter blocks: %d, body_font_size: %spt", len(blocks), body_font_size
     )
 
     combined_text = " ".join(b.text for b in blocks[:10])
@@ -606,7 +615,7 @@ def extract_metadata(
         a_title, a_identifier = future_a.result()
         b_result = future_b.result() if future_b is not None else None
 
-    logger.info(f"Track A — title: {a_title!r}, identifier: {a_identifier}")
-    logger.info(f"Track B — {'성공' if b_result else '없음/실패'}")
+    logger.info("Track A — title: %r, identifier: %s", a_title, a_identifier)
+    logger.info("Track B — %s", "성공" if b_result else "없음/실패")
 
     return _merge_results(a_title, a_identifier, fallback_lang, b_result)

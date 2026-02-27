@@ -1,3 +1,4 @@
+"""Doc SSoT 데이터 매핑 모듈."""
 # src/tractara/normalization/doc_mapper.py
 import uuid
 from datetime import datetime

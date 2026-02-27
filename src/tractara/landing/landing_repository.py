@@ -31,7 +31,7 @@ _TYPE_SUBDIR: Dict[str, str] = {
 }
 
 
-def save_term_candidates_landing(doc_id: str, terms: List[Dict[str, Any]]) -> None:
+def save_term_candidates_landing(terms: List[Dict[str, Any]]) -> None:
     """
     TERM baseline candidates 리스트를 Landing Zone에 저장.
     termType별 서브디렉토리로 분리:

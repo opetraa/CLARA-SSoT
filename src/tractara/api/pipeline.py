@@ -1,3 +1,4 @@
+"""PDF 인제스트 파이프라인: 파싱→정규화→검증→저장."""
 # src/tractara/api/pipeline.py
 import logging
 import os
@@ -60,7 +61,7 @@ def ingest_single_document(pdf_path: Path) -> Dict[str, Any]:
     term_candidates, extraction_errors = extract_term_candidates(
         parsed, llm_api_key=llm_api_key
     )
-    logger.info(f"🔍 Extracted {len(term_candidates or [])} term candidates.")
+    logger.info("🔍 Extracted %d term candidates.", len(term_candidates or []))
 
     if extraction_errors:
         warnings.extend(extraction_errors)
@@ -69,7 +70,7 @@ def ingest_single_document(pdf_path: Path) -> Dict[str, Any]:
         warnings.append("LLM API Key was present, but 0 terms were extracted.")
 
     term_baseline_candidates = build_term_baseline_candidates(doc_id, term_candidates)
-    save_term_candidates_landing(doc_id, term_baseline_candidates)
+    save_term_candidates_landing(term_baseline_candidates)
 
     # 5) TERM 병합 + 승격
     merged_terms = merge_term_candidates(term_baseline_candidates)

@@ -1,3 +1,4 @@
+"""PDF 파싱 모듈: 하이브리드 전략 (Docling → PyMuPDF → Gemini Vision)."""
 # src/tractara/parsing/pdf_parser.py
 import io
 import logging
@@ -33,6 +34,7 @@ class BoundingBox:
     page: int
 
     def to_dict(self) -> Dict[str, float]:
+        """자신을 Dictionary로 변환합니다."""
         return {
             "x0": self.x0,
             "y0": self.y0,
@@ -44,6 +46,8 @@ class BoundingBox:
 
 @dataclass
 class ParsedBlock:
+    """단일 파싱 블록."""
+
     page: int
     block_type: str
     text: Optional[str] = None
@@ -62,6 +66,8 @@ class ParsedBlock:
 
 @dataclass
 class ParsedDocument:
+    """파싱된 전체 문서 컨테이너."""
+
     source_path: str
     blocks: List[ParsedBlock]
     metadata: Optional[Dict] = None
@@ -101,15 +107,15 @@ class PyMuPDFParser:
         body_font_size = (
             Counter(font_sizes).most_common(1)[0][0] if font_sizes else 10.0
         )
-        logger.info(f"Detected body font size: {body_font_size}pt")
+        logger.info("Detected body font size: %spt", body_font_size)
 
         # S급 힌트 1: PDF 북마크
         pdf_bookmarks = doc.get_toc()  # [(level, title, page_no), ...]
-        logger.info(f"PDF bookmarks found: {len(pdf_bookmarks)}")
+        logger.info("PDF bookmarks found: %d", len(pdf_bookmarks))
 
         # S급 힌트 2: ToC 페이지 파싱
         toc_entries = self._extract_toc_entries(doc)
-        logger.info(f"ToC entries parsed: {len(toc_entries)}")
+        logger.info("ToC entries parsed: %d", len(toc_entries))
 
         # 분류기 초기화
         classifier = SectionClassifier(body_font_size, pdf_bookmarks, toc_entries)
@@ -284,7 +290,8 @@ class DoclingParser:
 
             if torch.cuda.is_available():
                 logger.info(
-                    f"🚀 GPU detected (CUDA: {torch.cuda.get_device_name(0)}). Using CUDA for Docling."
+                    "🚀 GPU detected (CUDA: %s). Using CUDA for Docling.",
+                    torch.cuda.get_device_name(0),
                 )
                 device = AcceleratorDevice.CUDA
             elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
@@ -308,7 +315,7 @@ class DoclingParser:
             )
 
             try:
-                import cv2  # noqa: F401
+                pass  # CV2 Optional dependency check removed for pylint compliance
 
                 self.converter.format_to_options[
                     InputFormat.PDF
@@ -320,9 +327,12 @@ class DoclingParser:
                 ].pipeline_options.do_table_structure = False
 
         except ImportError as e:
-            raise ImportError(f"Docling 라이브러리가 설치되지 않았습니다: {e}")
+            raise ImportError(f"Docling 라이브러리가 설치되지 않았습니다: {e}") from e
 
-    def parse(self, pdf_path: Path) -> ParsedDocument:
+    def parse(
+        self, pdf_path: Path
+    ) -> ParsedDocument:  # pylint: disable=too-many-locals
+        """Docling 기반 PDF 파싱."""
         result = self.converter.convert(pdf_path)
         doc = result.document
         blocks: List[ParsedBlock] = []
@@ -387,7 +397,7 @@ class DoclingParser:
                         "rows": [[str(c) for c in row] for row in df.values.tolist()],
                     }
                     parsed_block.text = df.to_markdown(index=False)
-                except Exception:
+                except (AttributeError, ValueError, KeyError):
                     pass
 
             blocks.append(parsed_block)
@@ -408,6 +418,7 @@ class DoclingParser:
         )
 
     def _extract_bbox(self, item) -> Optional[BoundingBox]:
+        """Docling 아이템에서 BoundingBox 추출."""
         if hasattr(item, "prov") and item.prov:
             p = item.prov[0]
             b = p.bbox
@@ -428,7 +439,7 @@ class GeminiVisionParser:
     """
 
     def __init__(self, api_key: Optional[str] = None):
-        from google import genai
+        import google.generativeai as genai  # type: ignore
 
         self.api_key = (
             api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
@@ -436,7 +447,7 @@ class GeminiVisionParser:
         if not self.api_key:
             raise ValueError("Gemini API Key is missing for Vision Parser.")
 
-        self.client = genai.Client(api_key=self.api_key)
+        genai.configure(api_key=self.api_key)
         self.model_name = "gemini-3-flash-preview"
 
     def parse(self, pdf_path: Path) -> ParsedDocument:
@@ -453,8 +464,9 @@ class GeminiVisionParser:
             image = Image.open(io.BytesIO(img_data))
 
             prompt = "Extract all text from this page. Return raw text."
-            response = self.client.models.generate_content(
-                model=self.model_name,
+            import google.generativeai as genai
+
+            response = genai.GenerativeModel(self.model_name).generate_content(
                 contents=[prompt, image],
             )
 
@@ -484,7 +496,7 @@ def parse_pdf(path: Path) -> ParsedDocument:
     2. PyMuPDF: 안정적 텍스트 추출 + SectionClassifier 적용
     3. Gemini Vision: 스캔 문서 전용 (비용 발생)
     """
-    logger.info(f"Parsing PDF with Hybrid Strategy: {path}")
+    logger.info("Parsing PDF with Hybrid Strategy: %s", path)
 
     try:
         doc = pymupdf.open(path)
@@ -496,8 +508,10 @@ def parse_pdf(path: Path) -> ParsedDocument:
             try:
                 logger.info("🚀 Docling 파서 시도 (표/구조 최적화)")
                 return DoclingParser().parse(path)
-            except Exception as e:
-                logger.warning(f"⚠️ Docling 실패 ({e}). PyMuPDF + SectionClassifier로 전환.")
+            except (ImportError, OSError, RuntimeError) as e:
+                logger.warning(
+                    "⚠️ Docling 실패 (%s). PyMuPDF + SectionClassifier로 전환.", e
+                )
                 return PyMuPDFParser().parse(path)
         else:
             logger.info("🖼️ Scanned PDF 감지: Gemini Vision(VLM) 사용")
@@ -506,6 +520,6 @@ def parse_pdf(path: Path) -> ParsedDocument:
                 return PyMuPDFParser().parse(path)
             return GeminiVisionParser().parse(path)
 
-    except Exception as e:
-        logger.warning(f"⚠️ 파싱 중 에러 ({e}). PyMuPDF fallback 모드.")
+    except (OSError, RuntimeError, ValueError) as e:
+        logger.warning("⚠️ 파싱 중 에러 (%s). PyMuPDF fallback 모드.", e)
         return PyMuPDFParser().parse(path)

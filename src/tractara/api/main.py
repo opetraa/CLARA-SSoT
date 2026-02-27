@@ -1,3 +1,4 @@
+"""FastAPI 인제스트 API 엔드포인트 정의."""
 # src/tractara/api/main.py
 import logging
 import shutil
@@ -27,12 +28,14 @@ app = FastAPI(title="Tractara Ingestion API")
 
 @app.on_event("startup")
 async def startup_event():
+    """FastAPI 시작 시 로깅 및 스키마 초기화."""
     configure_logging()
     schema_registry.load()
 
 
 @app.exception_handler(SchemaValidationException)
 async def schema_validation_exception_handler(_, exc: SchemaValidationException):
+    """스키마 검증 예외 핸들러."""
     # json_schema_validator에서 이미 ProblemDetails를 만들어 넣었으므로
     # 여기서는 그대로 반환만 해주면 된다.
     return JSONResponse(status_code=exc.problem.status, content=exc.problem.dict())
@@ -40,16 +43,19 @@ async def schema_validation_exception_handler(_, exc: SchemaValidationException)
 
 @app.get("/", include_in_schema=False)
 async def redirect_to_docs():
+    """루트 경로를 Swagger docs로 리다이렉트."""
     return RedirectResponse(url="/docs")
 
 
 @app.get("/health")
 async def health_check():
+    """헬스체크 엔드포인트."""
     return {"status": "ok"}
 
 
 @app.post("/ingest")
 async def ingest_document(file: UploadFile = File(...)):
+    """PDF 파일 인제스트 엔드포인트."""
     # 0) PDF 여부 체크
     if file.content_type != "application/pdf":
         trace_id = get_trace_id()
@@ -85,13 +91,13 @@ async def ingest_document(file: UploadFile = File(...)):
             shutil.copyfileobj(file.file, f)
 
         try:
-            logger.info(f"Starting ingestion for file: {file.filename}")
+            logger.info("Starting ingestion for file: %s", file.filename)
             result = ingest_single_document(tmp_path)
-            logger.info(f"Ingestion completed for file: {file.filename}")
+            logger.info("Ingestion completed for file: %s", file.filename)
         except SchemaValidationException as exc:
             # ✅ 스키마 에러는 전역 핸들러에게 맡긴다
             raise exc
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             # ✅ 나머지는 "internal-error"로 래핑하되, errors[]도 채워서 LLM-friendly 하게
             tb_str = "".join(traceback.format_exception(type(e), e, e.__traceback__))
             problem = ProblemDetails(

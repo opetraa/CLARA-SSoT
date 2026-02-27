@@ -1,3 +1,4 @@
+"""Term SSoT Repository 모듈."""
 # src/tractara/ssot/term_ssot_repository.py
 import json
 from pathlib import Path

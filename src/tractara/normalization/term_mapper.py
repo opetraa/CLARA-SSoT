@@ -1,3 +1,4 @@
+"""TERM 후보 추출 모듈: LLM 기반 CoT + Pydantic 구조화 추출."""
 # src/tractara/normalization/term_mapper.py
 import logging
 import os
@@ -42,6 +43,8 @@ class TermExtractionResult(BaseModel):
 
 @dataclass
 class TermCandidate:
+    """추출된 TERM 후보 데이터 클래스."""
+
     term: str
     definition_en: str | None = None
     definition_ko: str | None = None
@@ -69,7 +72,7 @@ class LLMTermExtractor:
         self.current_model_idx = 0
         self.model_name = self.model_candidates[0]
 
-        logger.info(f"🤖 Initializing Gemini with model: {self.model_name}")
+        logger.info("🤖 Initializing Gemini with model: %s", self.model_name)
         self._init_client()
 
     def _init_client(self):
@@ -107,7 +110,7 @@ class LLMTermExtractor:
             available_models = [
                 m.name.replace("models/", "") for m in genai.list_models()
             ]
-            logger.info(f"📋 Available Gemini models: {available_models}")
+            logger.info("📋 Available Gemini models: %s", available_models)
 
             for pref in preferences:
                 if pref in available_models and pref not in candidates:
@@ -117,8 +120,8 @@ class LLMTermExtractor:
             if not candidates and available_models:
                 candidates.append(available_models[0])
 
-        except Exception as e:
-            logger.error(f"⚠️ Failed to list models: {e}")
+        except (OSError, RuntimeError) as e:
+            logger.error("⚠️ Failed to list models: %s", e)
             # API 호출 실패 시 기본 리스트 사용
             for pref in preferences:
                 if pref not in candidates:
@@ -142,7 +145,10 @@ class LLMTermExtractor:
                 continue
 
             logger.info(
-                f"Sending chunk {i+1}/{len(text_chunks)} to LLM (len={len(chunk)})..."
+                "Sending chunk %d/%d to LLM (len=%d)...",
+                i + 1,
+                len(text_chunks),
+                len(chunk),
             )
             try:
                 result = self._extract_from_chunk(chunk)
@@ -161,12 +167,12 @@ class LLMTermExtractor:
                 ]
                 all_candidates.extend(candidates)
 
-                logger.info(f"Extracted {len(candidates)} terms from chunk")
-                logger.debug(f"CoT reasoning: {result.reasoning}")
+                logger.info("Extracted %d terms from chunk", len(candidates))
+                logger.debug("CoT reasoning: %s", result.reasoning)
 
-            except Exception as e:
+            except (ValueError, RuntimeError, ConnectionError) as e:
                 msg = f"Chunk {i+1} failed: {str(e)}"
-                logger.error(f"❌ TERM extraction failed: {msg}", exc_info=True)
+                logger.error("❌ TERM extraction failed: %s", msg, exc_info=True)
 
                 # 🚨 API 키 만료 또는 권한 에러 발생 시 즉시 중단
                 if "expired" in str(e).lower() or "400" in str(e) or "403" in str(e):
@@ -182,9 +188,9 @@ class LLMTermExtractor:
                 if "404" in str(e) and "models/" in str(e):
                     try:
                         available_models = [m.name for m in genai.list_models()]
-                        logger.error(f"Available models: {available_models}")
-                    except Exception as list_err:
-                        logger.error(f"Failed to list models: {list_err}")
+                        logger.error("Available models: %s", available_models)
+                    except (OSError, RuntimeError) as list_err:
+                        logger.error("Failed to list models: %s", list_err)
 
                 errors.append(msg)
 
@@ -267,18 +273,19 @@ class LLMTermExtractor:
                     or "Quota exceeded" in str(e)
                     or "ResourceExhausted" in str(e)
                 ):
-                    logger.warning(f"⚠️ Quota exceeded for model {self.model_name}.")
+                    logger.warning("⚠️ Quota exceeded for model %s.", self.model_name)
 
                     # 다음 모델로 전환
                     self.current_model_idx += 1
                     if self.current_model_idx < len(self.model_candidates):
                         self.model_name = self.model_candidates[self.current_model_idx]
-                        logger.info(f"🔄 Switching to fallback model: {self.model_name}")
+                        logger.info(
+                            "🔄 Switching to fallback model: %s", self.model_name
+                        )
                         self._init_client()
                         continue
-                    else:
-                        logger.error("❌ All fallback models exhausted.")
-                        raise e
+                    logger.error("❌ All fallback models exhausted.")
+                    raise e
                 raise e
 
 
@@ -323,10 +330,12 @@ def extract_term_candidates(
     extractor = LLMTermExtractor(api_key=llm_api_key)
     # 더 많은 용어를 찾기 위해 청크 수 증가 (테스트용 1개)
     chunks_to_process = text_chunks[:1]
-    logger.info(f"Sending {len(chunks_to_process)} text chunks to LLM...")
+    logger.info("Sending %d text chunks to LLM...", len(chunks_to_process))
     candidates, errors = extractor.extract(chunks_to_process)
 
-    logger.info(f"Extracted {len(candidates)} TERM candidates. Errors: {len(errors)}")
+    logger.info(
+        "Extracted %d TERM candidates. Errors: %d", len(candidates), len(errors)
+    )
     return candidates, errors
 
 
