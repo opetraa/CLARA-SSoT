@@ -19,17 +19,15 @@ import re
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
-
 # ---------------------------------------------------------------------------
 # 섹션 번호 패턴 (우선순위 순)
 # ---------------------------------------------------------------------------
 _SECTION_LABEL_PATTERNS: List[Tuple[str, re.Pattern]] = [
-    ("숫자형",   re.compile(r'^(\d+(?:\.\d+)*)\.?\s+(.+)', re.DOTALL)),
-    ("한국어형", re.compile(r'^(제\d+[장절항목])\s+(.+)', re.DOTALL)),
-    ("알파숫자", re.compile(r'^([A-Z]\.\d*)\s+(.+)', re.DOTALL)),
-    ("영문부록", re.compile(
-        r'^(Appendix\s+[A-Z])\s+(.+)', re.DOTALL | re.IGNORECASE)),
-    ("한글목록", re.compile(r'^([가-힣]\.\s*)(.+)', re.DOTALL)),
+    ("숫자형", re.compile(r"^(\d+(?:\.\d+)*)\.?\s+(.+)", re.DOTALL)),
+    ("한국어형", re.compile(r"^(제\d+[장절항목])\s+(.+)", re.DOTALL)),
+    ("알파숫자", re.compile(r"^([A-Z]\.\d*)\s+(.+)", re.DOTALL)),
+    ("영문부록", re.compile(r"^(Appendix\s+[A-Z])\s+(.+)", re.DOTALL | re.IGNORECASE)),
+    ("한글목록", re.compile(r"^([가-힣]\.\s*)(.+)", re.DOTALL)),
 ]
 
 
@@ -66,14 +64,16 @@ def _depth_to_type(depth: int) -> str:
 # 데이터 클래스
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class SectionFeatures:
     """분류기 입력: PDF 블록 하나의 시각적/텍스트적 특징."""
+
     text: str
     max_font_size: float
     is_bold: bool
-    font_name: str        # 블록 내 지배적 폰트명 (디버깅·미래 확장용)
-    page_width: float     # 페이지 너비 (중앙 정렬 판단)
+    font_name: str  # 블록 내 지배적 폰트명 (디버깅·미래 확장용)
+    page_width: float  # 페이지 너비 (중앙 정렬 판단)
     bbox_x0: float
     bbox_x1: float
 
@@ -81,17 +81,19 @@ class SectionFeatures:
 @dataclass
 class ClassificationResult:
     """분류기 출력: 블록 한 개에 대한 분류 결과."""
-    level: int                    # 0=제목, 1=section, 2+=subsection, 999=paragraph
-    block_type: str               # "title"|"section"|"subsection"|"paragraph"
-    confidence: float             # 0.0 ~ 1.0
+
+    level: int  # 0=제목, 1=section, 2+=subsection, 999=paragraph
+    block_type: str  # "title"|"section"|"subsection"|"paragraph"
+    confidence: float  # 0.0 ~ 1.0
     section_label: Optional[str]  # "1.2.3", "제2장" 등
     section_title: Optional[str]  # 번호 이후 제목 텍스트
-    decision_path: str            # 어떤 규칙 경로로 결정됐는지 (디버깅용)
+    decision_path: str  # 어떤 규칙 경로로 결정됐는지 (디버깅용)
 
 
 # ---------------------------------------------------------------------------
 # 분류기 본체
 # ---------------------------------------------------------------------------
+
 
 class SectionClassifier:
     """
@@ -117,12 +119,10 @@ class SectionClassifier:
 
         # S급 인덱스: O(1) 조회를 위해 dict/set으로 변환
         self.bookmark_index = {
-            _normalize(title): depth
-            for (depth, title, _page) in pdf_bookmarks
+            _normalize(title): depth for (depth, title, _page) in pdf_bookmarks
         }
         self.toc_index = {
-            _normalize(entry["title"]): entry.get("label")
-            for entry in toc_entries
+            _normalize(entry["title"]): entry.get("label") for entry in toc_entries
         }
 
     # -----------------------------------------------------------------------
@@ -136,8 +136,9 @@ class SectionClassifier:
         normalized = _normalize(features.text)
         font_ratio = features.max_font_size / self.body_size
         center_x = (features.bbox_x0 + features.bbox_x1) / 2
-        is_centered = abs(center_x - features.page_width /
-                          2) < features.page_width * 0.10
+        is_centered = (
+            abs(center_x - features.page_width / 2) < features.page_width * 0.10
+        )
         ends_with_punct = features.text.rstrip().endswith((".", "?", "!"))
         word_count = len(features.text.split())
         label, title = extract_section_label(features.text)

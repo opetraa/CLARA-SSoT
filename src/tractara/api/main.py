@@ -1,21 +1,22 @@
 # src/tractara/api/main.py
-from .pipeline import ingest_single_document
-from ..validation.json_schema_validator import (
-    SchemaValidationException,
-    schema_registry,
-)
-from ..tracing import get_trace_id, new_child_span
-from ..problem_details import MachineReadableError, ProblemDetails
-from ..logging_setup import configure_logging
-from fastapi.responses import JSONResponse, RedirectResponse
-from fastapi import FastAPI, File, UploadFile
+import logging
 import shutil
 import tempfile
 import traceback
 from pathlib import Path
-import logging
 
 from dotenv import load_dotenv
+from fastapi import FastAPI, File, UploadFile
+from fastapi.responses import JSONResponse, RedirectResponse
+
+from ..logging_setup import configure_logging
+from ..problem_details import MachineReadableError, ProblemDetails
+from ..tracing import get_trace_id, new_child_span
+from ..validation.json_schema_validator import (
+    SchemaValidationException,
+    schema_registry,
+)
+from .pipeline import ingest_single_document
 
 load_dotenv()  # .env 파일 로드
 
@@ -92,8 +93,7 @@ async def ingest_document(file: UploadFile = File(...)):
             raise exc
         except Exception as e:
             # ✅ 나머지는 "internal-error"로 래핑하되, errors[]도 채워서 LLM-friendly 하게
-            tb_str = "".join(traceback.format_exception(
-                type(e), e, e.__traceback__))
+            tb_str = "".join(traceback.format_exception(type(e), e, e.__traceback__))
             problem = ProblemDetails(
                 type="https://tractara.org/problems/internal-error",
                 title="Unexpected error during ingestion",

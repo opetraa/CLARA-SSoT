@@ -1,23 +1,22 @@
 # src/tractara/parsing/pdf_parser.py
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+import io
 import logging
 import os
 import re
 import uuid
-import io
-from PIL import Image
 from collections import Counter
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Dict, List, Optional
 
 # PyMuPDF 임포트
 import pymupdf
+from PIL import Image
 
 from .section_classifier import (
     SectionClassifier,
     SectionFeatures,
     extract_section_label,
-    _normalize,
 )
 
 logger = logging.getLogger(__name__)
@@ -26,6 +25,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class BoundingBox:
     """PDF 좌표 정보"""
+
     x0: float
     y0: float
     x1: float
@@ -38,7 +38,7 @@ class BoundingBox:
             "y0": self.y0,
             "x1": self.x1,
             "y1": self.y1,
-            "page": self.page
+            "page": self.page,
         }
 
 
@@ -51,20 +51,20 @@ class ParsedBlock:
     table_data: Optional[Dict] = None
     confidence: float = 1.0
     # 계층 구조 필드
-    level: int = 999          # 0: Title, 1: Section, 2+: Subsection, 999: Paragraph
+    level: int = 999  # 0: Title, 1: Section, 2+: Subsection, 999: Paragraph
     context_path: List[str] = field(default_factory=list)
     parent_id: Optional[str] = None
     block_id: Optional[str] = None
     # 섹션 메타데이터 (section_classifier 에서 추출)
-    section_label: Optional[str] = None   # 예: "1.2.3", "제2장"
-    section_title: Optional[str] = None   # 번호 이후 제목 텍스트
+    section_label: Optional[str] = None  # 예: "1.2.3", "제2장"
+    section_title: Optional[str] = None  # 번호 이후 제목 텍스트
 
 
 @dataclass
 class ParsedDocument:
     source_path: str
     blocks: List[ParsedBlock]
-    metadata: Dict = None
+    metadata: Optional[Dict] = None
 
 
 class PyMuPDFParser:
@@ -98,12 +98,13 @@ class PyMuPDFParser:
                             if span["text"].strip():
                                 font_sizes.append(round(span["size"], 1))
 
-        body_font_size = Counter(font_sizes).most_common(1)[
-            0][0] if font_sizes else 10.0
+        body_font_size = (
+            Counter(font_sizes).most_common(1)[0][0] if font_sizes else 10.0
+        )
         logger.info(f"Detected body font size: {body_font_size}pt")
 
         # S급 힌트 1: PDF 북마크
-        pdf_bookmarks = doc.get_toc()   # [(level, title, page_no), ...]
+        pdf_bookmarks = doc.get_toc()  # [(level, title, page_no), ...]
         logger.info(f"PDF bookmarks found: {len(pdf_bookmarks)}")
 
         # S급 힌트 2: ToC 페이지 파싱
@@ -111,8 +112,7 @@ class PyMuPDFParser:
         logger.info(f"ToC entries parsed: {len(toc_entries)}")
 
         # 분류기 초기화
-        classifier = SectionClassifier(
-            body_font_size, pdf_bookmarks, toc_entries)
+        classifier = SectionClassifier(body_font_size, pdf_bookmarks, toc_entries)
 
         # ── Phase 1: 블록 루프 ────────────────────────────────────────────
 
@@ -124,7 +124,7 @@ class PyMuPDFParser:
             page_width = page.rect.width
 
             for block in page_dict.get("blocks", []):
-                if block["type"] != 0:   # 0: text, 1: image
+                if block["type"] != 0:  # 0: text, 1: image
                     continue
 
                 # 블록 특징 추출
@@ -138,7 +138,7 @@ class PyMuPDFParser:
                         text_parts.append(span["text"])
                         if span["size"] > max_font_size:
                             max_font_size = span["size"]
-                        if span["flags"] & 16:   # bit 4 = bold
+                        if span["flags"] & 16:  # bit 4 = bold
                             is_bold = True
                         if span["text"].strip():
                             font_name_counter[span["font"]] += 1
@@ -148,8 +148,7 @@ class PyMuPDFParser:
                     continue
 
                 dominant_font = (
-                    font_name_counter.most_common(1)[0][0]
-                    if font_name_counter else ""
+                    font_name_counter.most_common(1)[0][0] if font_name_counter else ""
                 )
                 bbox_x0, bbox_y0, bbox_x1, bbox_y1 = block["bbox"]
 
@@ -172,43 +171,47 @@ class PyMuPDFParser:
 
                 # 부모 연결 및 컨텍스트 경로 수집
                 parent_id = context_stack[-1]["id"] if context_stack else None
-                current_context_path = [item["title"]
-                                        for item in context_stack]
+                current_context_path = [item["title"] for item in context_stack]
                 block_id = str(uuid.uuid4())
 
-                blocks.append(ParsedBlock(
-                    page=page_index + 1,
-                    block_type=result.block_type,
-                    text=clean_text,
-                    bbox=BoundingBox(
-                        x0=bbox_x0, y0=bbox_y0,
-                        x1=bbox_x1, y1=bbox_y1,
+                blocks.append(
+                    ParsedBlock(
                         page=page_index + 1,
-                    ),
-                    confidence=result.confidence,
-                    level=level,
-                    context_path=current_context_path,
-                    parent_id=parent_id,
-                    block_id=block_id,
-                    section_label=result.section_label,
-                    section_title=result.section_title,
-                ))
+                        block_type=result.block_type,
+                        text=clean_text,
+                        bbox=BoundingBox(
+                            x0=bbox_x0,
+                            y0=bbox_y0,
+                            x1=bbox_x1,
+                            y1=bbox_y1,
+                            page=page_index + 1,
+                        ),
+                        confidence=result.confidence,
+                        level=level,
+                        context_path=current_context_path,
+                        parent_id=parent_id,
+                        block_id=block_id,
+                        section_label=result.section_label,
+                        section_title=result.section_title,
+                    )
+                )
 
                 # 섹션만 스택에 푸시 (paragraph는 부모가 될 수 없음)
                 if level < 999:
-                    context_stack.append({
-                        "level": level,
-                        "id": block_id,
-                        "title": clean_text,
-                    })
+                    context_stack.append(
+                        {
+                            "level": level,
+                            "id": block_id,
+                            "title": clean_text,
+                        }
+                    )
 
         doc.close()
 
         return ParsedDocument(
             source_path=str(pdf_path),
             blocks=blocks,
-            metadata={"parser": "pymupdf_section_classifier",
-                      "version": "3.0.0"},
+            metadata={"parser": "pymupdf_section_classifier", "version": "3.0.0"},
         )
 
     # ── 내부 헬퍼 ─────────────────────────────────────────────────────────
@@ -270,27 +273,27 @@ class DoclingParser:
 
     def __init__(self):
         try:
-            from docling.document_converter import DocumentConverter, PdfFormatOption
+            import torch
             from docling.datamodel.base_models import InputFormat
             from docling.datamodel.pipeline_options import (
-                PdfPipelineOptions,
-                AcceleratorOptions,
                 AcceleratorDevice,
+                AcceleratorOptions,
+                PdfPipelineOptions,
             )
-            import torch
+            from docling.document_converter import DocumentConverter, PdfFormatOption
 
             if torch.cuda.is_available():
                 logger.info(
-                    f"🚀 GPU detected (CUDA: {torch.cuda.get_device_name(0)}). Using CUDA for Docling.")
+                    f"🚀 GPU detected (CUDA: {torch.cuda.get_device_name(0)}). Using CUDA for Docling."
+                )
                 device = AcceleratorDevice.CUDA
             elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
-                logger.info(
-                    "🚀 GPU detected (Apple MPS). Using MPS for Docling.")
-                device = getattr(AcceleratorDevice, "MPS",
-                                 AcceleratorDevice.CPU)
+                logger.info("🚀 GPU detected (Apple MPS). Using MPS for Docling.")
+                device = getattr(AcceleratorDevice, "MPS", AcceleratorDevice.CPU)
             else:
                 logger.info(
-                    "ℹ️ GPU not detected (CUDA/MPS unavailable). Using CPU for Docling.")
+                    "ℹ️ GPU not detected (CUDA/MPS unavailable). Using CPU for Docling."
+                )
                 device = AcceleratorDevice.CPU
 
             pipeline_options = PdfPipelineOptions()
@@ -299,16 +302,22 @@ class DoclingParser:
             )
 
             self.converter = DocumentConverter(
-                format_options={InputFormat.PDF: PdfFormatOption(
-                    pipeline_options=pipeline_options)}
+                format_options={
+                    InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)
+                }
             )
 
             try:
                 import cv2  # noqa: F401
-                self.converter.format_to_options[InputFormat.PDF].pipeline_options.do_table_structure = True
+
+                self.converter.format_to_options[
+                    InputFormat.PDF
+                ].pipeline_options.do_table_structure = True
             except ImportError:
                 logger.warning("OpenCV(cv2) 없음. 표 구조 추출 기능이 제한될 수 있습니다.")
-                self.converter.format_to_options[InputFormat.PDF].pipeline_options.do_table_structure = False
+                self.converter.format_to_options[
+                    InputFormat.PDF
+                ].pipeline_options.do_table_structure = False
 
         except ImportError as e:
             raise ImportError(f"Docling 라이브러리가 설치되지 않았습니다: {e}")
@@ -357,8 +366,7 @@ class DoclingParser:
             bbox = self._extract_bbox(item)
 
             parsed_block = ParsedBlock(
-                page=item.prov[0].page_no if hasattr(
-                    item, "prov") and item.prov else 1,
+                page=item.prov[0].page_no if hasattr(item, "prov") and item.prov else 1,
                 block_type=block_type,
                 text=text,
                 bbox=bbox,
@@ -376,7 +384,7 @@ class DoclingParser:
                     df = item.export_to_dataframe()
                     parsed_block.table_data = {
                         "headers": [str(h) for h in df.columns.tolist()],
-                        "rows": [[str(c) for c in row] for row in df.values.tolist()]
+                        "rows": [[str(c) for c in row] for row in df.values.tolist()],
                     }
                     parsed_block.text = df.to_markdown(index=False)
                 except Exception:
@@ -385,11 +393,13 @@ class DoclingParser:
             blocks.append(parsed_block)
 
             if block_type in ["title", "section"] and level is not None:
-                context_stack.append({
-                    "level": level,
-                    "id": block_id,
-                    "title": text,
-                })
+                context_stack.append(
+                    {
+                        "level": level,
+                        "id": block_id,
+                        "title": text,
+                    }
+                )
 
         return ParsedDocument(
             source_path=str(pdf_path),
@@ -402,8 +412,10 @@ class DoclingParser:
             p = item.prov[0]
             b = p.bbox
             return BoundingBox(
-                x0=getattr(b, "l", 0), y0=getattr(b, "b", 0),
-                x1=getattr(b, "r", 0), y1=getattr(b, "t", 0),
+                x0=getattr(b, "l", 0),
+                y0=getattr(b, "b", 0),
+                x1=getattr(b, "r", 0),
+                y1=getattr(b, "t", 0),
                 page=p.page_no,
             )
         return None
@@ -415,11 +427,12 @@ class GeminiVisionParser:
     gemini-3-flash-preview를 사용하여 이미지에서 구조화된 데이터를 추출.
     """
 
-    def __init__(self, api_key: str = None):
+    def __init__(self, api_key: Optional[str] = None):
         from google import genai
 
-        self.api_key = api_key or os.getenv(
-            "GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        self.api_key = (
+            api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        )
         if not self.api_key:
             raise ValueError("Gemini API Key is missing for Vision Parser.")
 
@@ -445,12 +458,14 @@ class GeminiVisionParser:
                 contents=[prompt, image],
             )
 
-            blocks.append(ParsedBlock(
-                page=page_index + 1,
-                block_type="paragraph",
-                text=response.text,
-                confidence=0.8,
-            ))
+            blocks.append(
+                ParsedBlock(
+                    page=page_index + 1,
+                    block_type="paragraph",
+                    text=response.text,
+                    confidence=0.8,
+                )
+            )
 
         doc.close()
 
@@ -482,8 +497,7 @@ def parse_pdf(path: Path) -> ParsedDocument:
                 logger.info("🚀 Docling 파서 시도 (표/구조 최적화)")
                 return DoclingParser().parse(path)
             except Exception as e:
-                logger.warning(
-                    f"⚠️ Docling 실패 ({e}). PyMuPDF + SectionClassifier로 전환.")
+                logger.warning(f"⚠️ Docling 실패 ({e}). PyMuPDF + SectionClassifier로 전환.")
                 return PyMuPDFParser().parse(path)
         else:
             logger.info("🖼️ Scanned PDF 감지: Gemini Vision(VLM) 사용")

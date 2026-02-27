@@ -9,10 +9,23 @@ from ..parsing.pdf_parser import ParsedBlock, ParsedDocument
 
 # DOC 스키마 blockType enum에 허용된 값
 _VALID_BLOCK_TYPES = {
-    "title", "abstract", "section", "subsection", "paragraph",
-    "list", "listItem", "table", "figure", "equation",
-    "code", "procedure", "procedureStep", "reference",
-    "appendix", "footnote", "caption",
+    "title",
+    "abstract",
+    "section",
+    "subsection",
+    "paragraph",
+    "list",
+    "listItem",
+    "table",
+    "figure",
+    "equation",
+    "code",
+    "procedure",
+    "procedureStep",
+    "reference",
+    "appendix",
+    "footnote",
+    "caption",
 }
 
 
@@ -35,11 +48,11 @@ def _blocks_to_content(blocks: List[ParsedBlock]) -> List[Dict[str, Any]]:
         block_type = b.block_type if b.block_type in _VALID_BLOCK_TYPES else "paragraph"
 
         item: Dict[str, Any] = {
-            "blockId":     b.block_id if b.block_id else f"block-{i:04d}",
-            "parentId":    b.parent_id,
-            "blockType":   block_type,
-            "text":        b.text or "",
-            "contextPath": b.context_path,   # 빈 [] 포함 항상 출력
+            "blockId": b.block_id if b.block_id else f"block-{i:04d}",
+            "parentId": b.parent_id,
+            "blockType": block_type,
+            "text": b.text or "",
+            "contextPath": b.context_path,  # 빈 [] 포함 항상 출력
         }
 
         # level: paragraph(999)는 생략
@@ -112,7 +125,9 @@ def build_doc_baseline(parsed: ParsedDocument) -> Dict[str, Any]:
         "provenance": {
             "sourceFile": parsed.source_path,
             "extractionMetadata": {
-                "parserVersion": parsed.metadata.get("version", "0.0.0") if parsed.metadata else "0.0.0",
+                "parserVersion": parsed.metadata.get("version", "0.0.0")
+                if parsed.metadata
+                else "0.0.0",
                 "extractionDate": now,
                 "ocrApplied": False,
                 "confidence": 0.5,

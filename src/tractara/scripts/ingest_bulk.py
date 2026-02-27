@@ -14,9 +14,9 @@ sys.path.append(str(project_root))
 
 # 2. 프로젝트 모듈 임포트 (sys.path 설정 후)
 try:
-    from src.tractara.validation.json_schema_validator import schema_registry
-    from src.tractara.logging_setup import configure_logging
-    from src.tractara.api.pipeline import ingest_single_document
+    from tractara.api.pipeline import ingest_single_document
+    from tractara.logging_setup import configure_logging
+    from tractara.validation.json_schema_validator import schema_registry
 except ImportError as e:
     print(f"❌ Error importing project modules: {e}")
     print(f"   Current sys.path: {sys.path}")
@@ -66,8 +66,7 @@ def main():
             doc_id = result.get("documentId", "Unknown ID")
             term_count = result.get("promotedTermCount", 0)
 
-            logger.info(
-                f"✅ 성공: {pdf_path.name} (DocID: {doc_id}, Terms: {term_count})")
+            logger.info(f"✅ 성공: {pdf_path.name} (DocID: {doc_id}, Terms: {term_count})")
             success_count += 1
 
         except Exception as e:
@@ -77,7 +76,7 @@ def main():
 
     # 5. 최종 리포트
     logger.info("=" * 60)
-    logger.info(f"📊 일괄 수집 완료 리포트")
+    logger.info("📊 일괄 수집 완료 리포트")
     logger.info(f"   - 총 파일 수 : {len(pdf_files)}")
     logger.info(f"   - 성공       : {success_count}")
     logger.info(f"   - 실패       : {fail_count}")

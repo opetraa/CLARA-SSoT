@@ -29,11 +29,21 @@ _VALID_ORG_TYPES = frozenset(
     {"utility", "vendor", "regulator", "national_lab", "corporate_research"}
 )
 _VALID_ROLES = frozenset(
-    {"creator", "publisher", "sponsor", "project_manager", "reviewer", "approver", "contributor"}
+    {
+        "creator",
+        "publisher",
+        "sponsor",
+        "project_manager",
+        "reviewer",
+        "approver",
+        "contributor",
+    }
 )
 # DC 필드 라우팅용 서브셋
 _CREATOR_ROLES = frozenset({"creator"})
-_CONTRIBUTOR_ROLES = frozenset({"reviewer", "approver", "project_manager", "contributor"})
+_CONTRIBUTOR_ROLES = frozenset(
+    {"reviewer", "approver", "project_manager", "contributor"}
+)
 _PUBLISHER_ROLES = frozenset({"publisher", "sponsor"})
 _VALID_DOC_TYPES = frozenset(
     {
@@ -71,9 +81,7 @@ class ContributorItem(BaseModel):
             "reviewer | approver | contributor 중 하나"
         )
     )
-    affiliation: str | None = Field(
-        None, description="소속 기관명 (entityType=person 일 때)"
-    )
+    affiliation: str | None = Field(None, description="소속 기관명 (entityType=person 일 때)")
     organizationType: str | None = Field(
         None,
         description=(
@@ -109,15 +117,15 @@ class IdentifierItem(BaseModel):
 class LLMMetadata(BaseModel):
     dc_title: str | None = Field(None, description="문서 공식 제목")
     dc_alternative_titles: list[str] | None = Field(
-        None, description="부제 또는 영문/국문 병기 제목 등")
-    dc_identifier: list[IdentifierItem] | None = Field(
-        None, description="문서 번호/식별자 목록")
+        None, description="부제 또는 영문/국문 병기 제목 등"
+    )
+    dc_identifier: list[IdentifierItem] | None = Field(None, description="문서 번호/식별자 목록")
     contributors: list[ContributorItem] | None = Field(
-        None, description="모든 기여자·이해관계자 목록 (role로 dc:creator/dc:contributor/dc:publisher 구분)"
+        None,
+        description="모든 기여자·이해관계자 목록 (role로 dc:creator/dc:contributor/dc:publisher 구분)",
     )
     dc_date: DateInfo | None = Field(None, description="날짜 정보")
-    dc_language: str | None = Field(
-        None, description="ISO 639-1 언어 코드 (ko, en 등)")
+    dc_language: str | None = Field(None, description="ISO 639-1 언어 코드 (ko, en 등)")
     dc_type: str | None = Field(
         None,
         description=(
@@ -233,8 +241,7 @@ def _extract_frontmatter_blocks(
 
     doc.close()
 
-    body_font_size = Counter(font_sizes).most_common(1)[
-        0][0] if font_sizes else 10.0
+    body_font_size = Counter(font_sizes).most_common(1)[0][0] if font_sizes else 10.0
     return blocks, body_font_size
 
 
@@ -377,7 +384,7 @@ def _build_llm_prompt(frontmatter_text: str) -> str:
       regulator        — 규제기관 (예: NRC, 원자력안전위원회)
       national_lab     — 국립·정부출연 연구소 (예: ANL, KAERI, ORNL)
       corporate_research — 민간·운영사 부설 연구소 (예: KHNP 중앙연구원)
-- dc_language: 문서의 주된 서술 언어(Primary Language)를 ISO 639-1 코드로 선택 (한국어: ko, 영어: en). 
+- dc_language: 문서의 주된 서술 언어(Primary Language)를 ISO 639-1 코드로 선택 (한국어: ko, 영어: en).
     기술 용어나 한자가 섞여 있어도 문장 구조를 이루는 주 언어를 선택하세요.
 - dc_date: 날짜는 YYYY-MM-DD 형식. 용도별 매핑:
     작성 완료일/Draft → created | 공식 발행/Issue → issued | 개정/Revision → modified
@@ -402,8 +409,8 @@ def _run_track_b(blocks: list[_FrontBlock], api_key: str) -> LLMMetadata | None:
     실패 시 None 반환 (Track A 결과만으로 graceful fallback).
     """
     try:
-        import instructor
         import google.generativeai as genai
+        import instructor
     except ImportError:
         logger.warning("instructor 또는 google-generativeai 미설치. Track B 건너뜀.")
         return None
@@ -422,15 +429,13 @@ def _run_track_b(blocks: list[_FrontBlock], api_key: str) -> LLMMetadata | None:
 
     try:
         result: LLMMetadata = client.chat.completions.create(
-            messages=[
-                {"role": "user", "content": _build_llm_prompt(
-                    frontmatter_text)}
-            ],
+            messages=[{"role": "user", "content": _build_llm_prompt(frontmatter_text)}],
             response_model=LLMMetadata,
             max_retries=2,
         )
         logger.info(
-            f"Track B 추출 성공: title={result.dc_title!r}, type={result.dc_type!r}")
+            f"Track B 추출 성공: title={result.dc_title!r}, type={result.dc_type!r}"
+        )
         return result
     except Exception as e:
         logger.error(f"Track B LLM 호출 실패: {e}")
@@ -463,8 +468,11 @@ def _merge_results(
     result.dc_identifier = track_a_identifier
 
     # language: Track B 우선, 실패 시 Track A(Heuristic)
-    result.dc_language = (track_b.dc_language.lower() if track_b and track_b.dc_language and len(
-        track_b.dc_language) == 2 else fallback_lang)
+    result.dc_language = (
+        track_b.dc_language.lower()
+        if track_b and track_b.dc_language and len(track_b.dc_language) == 2
+        else fallback_lang
+    )
 
     if track_b is None:
         return result
@@ -492,7 +500,11 @@ def _merge_results(
             role = c.role if c.role in _VALID_ROLES else None
             if role is None:
                 continue
-            entity_type = c.entityType if c.entityType in {"person", "organization"} else "organization"
+            entity_type = (
+                c.entityType
+                if c.entityType in {"person", "organization"}
+                else "organization"
+            )
 
             item: dict[str, Any] = {"name": c.name, "entityType": entity_type}
             if entity_type == "person" and c.affiliation:
@@ -532,8 +544,7 @@ def _merge_results(
 
     # subject
     if track_b.dc_subject:
-        subjects = [s for s in track_b.dc_subject if isinstance(
-            s, str) and s.strip()]
+        subjects = [s for s in track_b.dc_subject if isinstance(s, str) and s.strip()]
         if subjects:
             result.dc_subject = subjects
 
@@ -569,8 +580,7 @@ def extract_metadata(
     2단계: Track A (결정론적) + Track B (LLM) 병렬 실행
     3단계: 결과 병합 (Track A title/identifier 우선)
     """
-    resolved_key = api_key or os.getenv(
-        "GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    resolved_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
     blocks, body_font_size = _extract_frontmatter_blocks(pdf_path)
     logger.info(
@@ -581,9 +591,9 @@ def extract_metadata(
     fallback_lang = _detect_primary_language(combined_text)
 
     with ThreadPoolExecutor(max_workers=2) as executor:
-        future_a: Future[tuple[str | None, list[dict[str, str]] | None]] = (
-            executor.submit(_run_track_a, blocks, body_font_size)
-        )
+        future_a: Future[
+            tuple[str | None, list[dict[str, str]] | None]
+        ] = executor.submit(_run_track_a, blocks, body_font_size)
         future_b: Future[LLMMetadata | None] | None = (
             executor.submit(_run_track_b, blocks, resolved_key)
             if resolved_key

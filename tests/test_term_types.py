@@ -12,6 +12,7 @@ TERM 3단 분리 아키텍처 단위 테스트.
 import pytest
 from pydantic import ValidationError
 
+from tractara.curation.term_curation_service import merge_term_candidates
 from tractara.models.term_types import (
     TermClassReference,
     TermRelReference,
@@ -23,10 +24,9 @@ from tractara.normalization.term_mapper import (
     _normalize_term_id,
     build_term_baseline_candidates,
 )
-from tractara.curation.term_curation_service import merge_term_candidates
-
 
 # ── TermType Enum ────────────────────────────────────────────────────────────
+
 
 def test_term_type_values():
     assert TermType.CLASS.value == "TERM-CLASS"
@@ -40,6 +40,7 @@ def test_term_type_is_str():
 
 
 # ── Typed Reference 패턴 검증 ────────────────────────────────────────────────
+
 
 class TestTermClassReference:
     def test_valid(self):
@@ -81,6 +82,7 @@ class TestTermRuleReference:
 
 # ── _normalize_term_id ───────────────────────────────────────────────────────
 
+
 class TestNormalizeTermId:
     def test_headword_en_takes_priority(self):
         result = _normalize_term_id("Operating Temperature", "OT", TermType.CLASS)
@@ -119,21 +121,27 @@ class TestNormalizeTermId:
 
     def test_special_chars_removed(self):
         # 하이픈(-) → 공백 → 언더스코어, 괄호 제거 후 공백 → 언더스코어
-        result = _normalize_term_id("Stress-Corrosion Cracking (SCC)", "SCC", TermType.CLASS)
+        result = _normalize_term_id(
+            "Stress-Corrosion Cracking (SCC)", "SCC", TermType.CLASS
+        )
         assert result == "term:class:stress_corrosion_cracking_scc"
 
     def test_no_uuid_in_output(self):
         """출력에 UUID 형식이 없어야 한다."""
         result = _normalize_term_id("Operating Temperature", "OT", TermType.CLASS)
         import re
+
         uuid_pattern = r"[0-9a-f]{8}-[0-9a-f]{4}-"
         assert not re.search(uuid_pattern, result)
 
 
 # ── build_term_baseline_candidates ──────────────────────────────────────────
 
+
 class TestBuildTermBaselineCandidates:
-    def _make_candidate(self, headword_en: str = "Aging Management Program", term: str = "AMP") -> TermCandidate:
+    def _make_candidate(
+        self, headword_en: str = "Aging Management Program", term: str = "AMP"
+    ) -> TermCandidate:
         return TermCandidate(
             term=term,
             headword_en=headword_en,
@@ -157,6 +165,7 @@ class TestBuildTermBaselineCandidates:
     def test_no_uuid_in_term_id(self):
         """termId에 UUID 형식이 없어야 한다."""
         import re
+
         result = build_term_baseline_candidates("DOC-001", [self._make_candidate()])
         uuid_pattern = r"[0-9a-f]{8}-[0-9a-f]{4}-"
         assert not re.search(uuid_pattern, result[0]["termId"])
@@ -172,14 +181,25 @@ class TestBuildTermBaselineCandidates:
 
 # ── merge_term_candidates 그룹핑 키 ─────────────────────────────────────────
 
+
 class TestMergeTermCandidates:
     def test_same_term_same_type_merges(self):
         """같은 term + 같은 termType → 병합."""
         candidates = [
-            {"term": "AMP", "termType": "TERM-CLASS", "termId": "term:class:amp",
-             "definition_en": "[PENDING]", "definition_ko": ""},
-            {"term": "AMP", "termType": "TERM-CLASS", "termId": "term:class:amp",
-             "definition_en": "Aging Management Program.", "definition_ko": "경년열화"},
+            {
+                "term": "AMP",
+                "termType": "TERM-CLASS",
+                "termId": "term:class:amp",
+                "definition_en": "[PENDING]",
+                "definition_ko": "",
+            },
+            {
+                "term": "AMP",
+                "termType": "TERM-CLASS",
+                "termId": "term:class:amp",
+                "definition_en": "Aging Management Program.",
+                "definition_ko": "경년열화",
+            },
         ]
         merged = merge_term_candidates(candidates)
         assert len(merged) == 1
@@ -188,10 +208,20 @@ class TestMergeTermCandidates:
     def test_same_term_different_type_not_merged(self):
         """같은 term이지만 termType이 다르면 별개 엔트리로 유지."""
         candidates = [
-            {"term": "requires", "termType": "TERM-CLASS", "termId": "term:class:requires",
-             "definition_en": "A concept.", "definition_ko": ""},
-            {"term": "requires", "termType": "TERM-REL", "termId": "term:rel:requires",
-             "definition_en": "A relation.", "definition_ko": ""},
+            {
+                "term": "requires",
+                "termType": "TERM-CLASS",
+                "termId": "term:class:requires",
+                "definition_en": "A concept.",
+                "definition_ko": "",
+            },
+            {
+                "term": "requires",
+                "termType": "TERM-REL",
+                "termId": "term:rel:requires",
+                "definition_en": "A relation.",
+                "definition_ko": "",
+            },
         ]
         merged = merge_term_candidates(candidates)
         assert len(merged) == 2
@@ -199,10 +229,20 @@ class TestMergeTermCandidates:
     def test_different_terms_not_merged(self):
         """다른 term → 각각 별개 엔트리."""
         candidates = [
-            {"term": "AMP", "termType": "TERM-CLASS", "termId": "term:class:amp",
-             "definition_en": "...", "definition_ko": ""},
-            {"term": "SCC", "termType": "TERM-CLASS", "termId": "term:class:scc",
-             "definition_en": "...", "definition_ko": ""},
+            {
+                "term": "AMP",
+                "termType": "TERM-CLASS",
+                "termId": "term:class:amp",
+                "definition_en": "...",
+                "definition_ko": "",
+            },
+            {
+                "term": "SCC",
+                "termType": "TERM-CLASS",
+                "termId": "term:class:scc",
+                "definition_en": "...",
+                "definition_ko": "",
+            },
         ]
         merged = merge_term_candidates(candidates)
         assert len(merged) == 2

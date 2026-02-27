@@ -1,7 +1,7 @@
 # src/tractara/curation/term_curation_service.py
+import re
 from collections import defaultdict
 from typing import Any, Dict, List
-import re
 
 
 def merge_term_candidates(candidates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -47,12 +47,7 @@ def generate_term_filename(term: Dict[str, Any]) -> str:
     규칙: [상태]_[TermID]_v[버전].json
     예시: M_AMP_v1.1.json
     """
-    status_map = {
-        "candidate": "C",
-        "anchored": "A",
-        "mature": "M",
-        "rejected": "X"
-    }
+    status_map = {"candidate": "C", "anchored": "A", "mature": "M", "rejected": "X"}
 
     # 1. 상태 코드 (기본값 C)
     status_str = term.get("status", "candidate")

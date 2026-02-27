@@ -48,7 +48,7 @@ def determine_term_status(term: Dict[str, Any]) -> str:
 
     # 3. 상태 결정 매트릭스
     if is_trusted and is_complete:
-        return "mature"   # M: 신뢰도 높음 + 완성도 높음
+        return "mature"  # M: 신뢰도 높음 + 완성도 높음
     elif is_trusted:
         return "anchored"  # A: 신뢰도 높음 + 완성도 낮음 (ID 확정, 참조 가능)
     else:
