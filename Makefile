@@ -46,7 +46,7 @@ clean:
 	find . -type d -name ".pytest_cache" -exec rm -r {} +
 	find . -type d -name ".mypy_cache" -exec rm -r {} +
 
-clean:
+clean-data:
 	@python3 scripts/clean_data.py
 
 run:
@@ -110,8 +110,8 @@ sync-rules:
 
 git-push:
 	@git add .
-	@git commit -m '$(M)'
-	@git push
+	@git diff-index --quiet HEAD || git commit -m '$(M)'
+	@git push -u origin $$(git rev-parse --abbrev-ref HEAD)
 	@echo "✅ 모든 변경사항이 원격 저장소로 푸시되었습니다."
 
 git-pull:
