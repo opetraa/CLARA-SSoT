@@ -8,7 +8,7 @@ import uuid
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 # PyMuPDF 임포트
 import pymupdf
@@ -542,10 +542,7 @@ class GeminiVisionParser:
 
 def _ocr_equation_region(
     page: "pymupdf.Page",  # type: ignore[name-defined]
-    x0: float,
-    y0: float,
-    x1: float,
-    y1: float,
+    bbox: Tuple[float, float, float, float],
     padding: int = 10,
 ) -> Optional[str]:
     """수식 BBox 영역을 이미지로 크롭 후 Gemini Vision으로 LaTeX를 추출한다.
@@ -557,6 +554,7 @@ def _ocr_equation_region(
         return None
 
     try:
+        x0, y0, x1, y1 = bbox
         # 1. BBox → 크롭 이미지 (패딩 추가로 잘림 방지)
         clip = pymupdf.Rect(
             x0 - padding,
@@ -606,7 +604,7 @@ def _supplement_missing_equations(
     """
     try:
         doc = pymupdf.open(doc_path)
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         logger.warning("Surgical supplement failed to open PDF: %s", e)
         return docling_blocks
 
@@ -688,7 +686,7 @@ def _supplement_missing_equations(
                 eq_num = eq_num_match.group("num").strip()
 
                 # Gemini Vision으로 정확한 LaTeX 취득 시도
-                vision_latex = _ocr_equation_region(page, bx0, by0, bx1, by1)
+                vision_latex = _ocr_equation_region(page, (bx0, by0, bx1, by1))
 
                 if vision_latex:
                     latex_text = vision_latex
