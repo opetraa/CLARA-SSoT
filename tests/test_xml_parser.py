@@ -5,9 +5,9 @@ from pathlib import Path
 import pytest
 from lxml import etree
 
+from tractara.parsing.metadata_extractor import extract_metadata
 from tractara.parsing.models import ParsedDocument
 from tractara.parsing.xml_parser import parse_xml
-from tractara.parsing.metadata_extractor import extract_metadata
 
 
 # 테스트용 더미 파일 생성 픽스처
