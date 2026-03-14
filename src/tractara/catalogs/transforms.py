@@ -68,8 +68,6 @@ def _extract_text_content(element: Any) -> Optional[str]:
 
 def _extract_jats_author_name(element: Any) -> List[Dict[str, str]]:
     """JATS contrib 요소에서 저자 이름을 추출합니다."""
-    # List elements directly passed, transform handles one or list,
-    # but let us handle if it is the element itself or a list of elements.
     # We will assume `element` is a single element matching the xpath
     surname = element.findtext(".//surname") or ""
     given = element.findtext(".//given-names") or ""
@@ -127,6 +125,52 @@ def _s1000d_info_code_to_type(element: Any) -> str:
     return mapping.get(info_code[:3], "Procedure")
 
 
+def _parse_applic_tree(element: Any) -> Dict[str, Any]:
+    """S1000D applic 요소 내 evaluate/assert 트리를 JSON으로 변환합니다."""
+    result: Dict[str, Any] = {"applicId": element.get("id", "")}
+
+    # displayText
+    display_text_el = element.find(".//displayText/simplePara")
+    if display_text_el is not None:
+        result["displayText"] = "".join(display_text_el.itertext()).strip()
+
+    def _parse_node(node: Any) -> Dict[str, Any]:
+        tag = node.tag.lower() if isinstance(node.tag, str) else ""
+        if tag == "assert":
+            return {
+                "type": "assert",
+                "ident": node.get("applicPropertyIdent", ""),
+                "propType": node.get("applicPropertyType", ""),
+                "values": node.get("applicPropertyValues", ""),
+            }
+        elif tag == "evaluate":
+            children = [
+                _parse_node(c)
+                for c in node
+                if isinstance(c.tag, str) and c.tag.lower() in ("assert", "evaluate")
+            ]
+            return {
+                "type": "evaluate",
+                "andOr": node.get("andOr", "and"),
+                "children": children,
+            }
+        return {}
+
+    eval_el = element.find("evaluate")
+    if eval_el is not None:
+        result["evaluateTree"] = _parse_node(eval_el)
+
+    return result
+
+
+def _extract_dmc_raw_fields(element: Any) -> Dict[str, str]:
+    """dmCode 요소의 모든 속성을 개별 키로 추출합니다."""
+    dm_code = element if element.tag.endswith("dmCode") else element.find(".//dmCode")
+    if dm_code is None:
+        return {}
+    return dict(dm_code.attrib)
+
+
 TRANSFORM_REGISTRY = {
     "dmc_assemble": _assemble_dmc_identifier,
     "date_from_attrs": _date_from_element_attrs,
@@ -136,4 +180,6 @@ TRANSFORM_REGISTRY = {
     "dmc_from_dmref": _dmc_from_dmref,
     "s1000d_security": _s1000d_security,
     "s1000d_info_code_to_type": _s1000d_info_code_to_type,
+    "applic_tree": _parse_applic_tree,
+    "dmc_raw_fields": _extract_dmc_raw_fields,
 }

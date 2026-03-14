@@ -38,9 +38,9 @@ metadata:
       transform: "join_text"
       target_field: "rightsHolder"
   dc_coverage:
-    - xpath: ".//applic/displayText/simplePara"
-      transform: "text_extract"
-      target_field: "component"
+    - xpath: ".//applic"
+      transform: "applic_tree"
+      target_field: "applicTree"
     - xpath: ".//systemBreakdownCode"
       target_field: "system"
   dc_description:

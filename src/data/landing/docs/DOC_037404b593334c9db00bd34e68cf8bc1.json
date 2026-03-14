@@ -1,0 +1,476 @@
+{
+  "documentId": "DOC_037404b593334c9db00bd34e68cf8bc1",
+  "$schema": "https://tractara.org/schemas/doc-baseline/v1.0.0",
+  "version": "1.0.0",
+  "lastUpdated": "2026-03-14T07:48:02.879162Z",
+  "metadata": {
+    "dc:title": "Front brake - Install procedures",
+    "dc:type": "Procedure",
+    "dc:language": "en-US",
+    "dc:creator": [
+      {
+        "name": "UK MoD",
+        "entityType": "organization"
+      }
+    ],
+    "dc:contributor": [
+      {
+        "name": "UK MoD",
+        "entityType": "organization",
+        "role": "contributor"
+      }
+    ],
+    "dc:publisher": [
+      {
+        "name": "U8025",
+        "role": "publisher"
+      }
+    ],
+    "dc:date": {
+      "issued": "2012-12-31"
+    },
+    "dc:identifier": [
+      {
+        "scheme": "URI",
+        "value": "DMC-S1000DBIKE-AAA-DA1-20-00-00AA-720A-A_001-00"
+      }
+    ],
+    "dc:subject": [
+      "Front brake",
+      "Install procedures"
+    ],
+    "dc:coverage": {
+      "applicId": "app-0001",
+      "displayText": "Mountain bicycle and (Mountain storm Mk1 or Brook trekker Mk9)",
+      "evaluateTree": {
+        "type": "evaluate",
+        "andOr": "and",
+        "children": [
+          {
+            "type": "assert",
+            "ident": "type",
+            "propType": "prodattr",
+            "values": "Mountain bicycle"
+          },
+          {
+            "type": "evaluate",
+            "andOr": "or",
+            "children": [
+              {
+                "type": "evaluate",
+                "andOr": "and",
+                "children": [
+                  {
+                    "type": "assert",
+                    "ident": "model",
+                    "propType": "prodattr",
+                    "values": "Mountain storm"
+                  },
+                  {
+                    "type": "assert",
+                    "ident": "version",
+                    "propType": "prodattr",
+                    "values": "Mk1"
+                  }
+                ]
+              },
+              {
+                "type": "evaluate",
+                "andOr": "and",
+                "children": [
+                  {
+                    "type": "assert",
+                    "ident": "model",
+                    "propType": "prodattr",
+                    "values": "Brook trekker"
+                  },
+                  {
+                    "type": "assert",
+                    "ident": "version",
+                    "propType": "prodattr",
+                    "values": "Mk9"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "system": "BY13"
+    },
+    "dc:rights": {
+      "accessRights": "restricted",
+      "license": "01_cc51_cv51",
+      "rightsHolder": "AeroSpace and Defence Industries Associations of Europe - ASD.; Ministries of Defence of the member countries of ASD."
+    }
+  },
+  "provenance": {
+    "sourceFile": "/home/kizarik/Tractara/data/DMC-S1000DBIKE-AAA-DA1-20-00-00AA-720A-A_001-00_EN-US.XML",
+    "extractionMetadata": {
+      "parserVersion": "1.0.0",
+      "extractionDate": "2026-03-14T07:48:02.879162Z",
+      "ocrApplied": false,
+      "confidence": 0.5
+    },
+    "validationStatus": "draft",
+    "curationHistory": [],
+    "sourceXPathMapping": [
+      {
+        "blockId": "6afbfeb2-2443-48d2-ab76-1492c344290b",
+        "sourceXPath": "/dmodule/content/procedure/preliminaryRqmts"
+      },
+      {
+        "blockId": "e6673d1e-5287-4d44-9cb9-5dcc358ae9e2",
+        "sourceXPath": "/dmodule/content/procedure/mainProcedure/proceduralStep[1]/note"
+      },
+      {
+        "blockId": "7efce529-fb32-4312-a342-ebf899105b4c",
+        "sourceXPath": "/dmodule/content/procedure/mainProcedure/proceduralStep[2]"
+      },
+      {
+        "blockId": "06fc7b30-4d47-4fba-9860-2a551a5d71e3",
+        "sourceXPath": "/dmodule/content/procedure/mainProcedure/proceduralStep[3]"
+      },
+      {
+        "blockId": "fcc3c44d-8adf-4360-b4d4-5c6a5e3a3a2d",
+        "sourceXPath": "/dmodule/content/procedure/mainProcedure/proceduralStep[4]"
+      },
+      {
+        "blockId": "b2e7a3ee-dfed-4a4c-8d9c-3ab988282008",
+        "sourceXPath": "/dmodule/content/procedure/closeRqmts"
+      }
+    ]
+  },
+  "content": [
+    {
+      "blockId": "527d57cd-1eb6-44cc-b4ba-81f649f66aa0",
+      "parentId": null,
+      "blockType": "title",
+      "text": "Front brake - Install procedures",
+      "contextPath": [],
+      "level": 0,
+      "structuredContent": {
+        "s1000d_dmCode": {
+          "modelIdentCode": "S1000DBIKE",
+          "systemDiffCode": "AAA",
+          "systemCode": "DA1",
+          "subSystemCode": "2",
+          "subSubSystemCode": "0",
+          "assyCode": "00",
+          "disassyCode": "00",
+          "disassyCodeVariant": "AA",
+          "infoCode": "720",
+          "infoCodeVariant": "A",
+          "itemLocationCode": "A"
+        }
+      }
+    },
+    {
+      "blockId": "6afbfeb2-2443-48d2-ab76-1492c344290b",
+      "parentId": null,
+      "blockType": "section",
+      "text": "preliminaryRqmts",
+      "contextPath": [],
+      "level": 1,
+      "structuredContent": {
+        "conditions": [
+          {
+            "type": "condition",
+            "status": "none"
+          },
+          {
+            "type": "support_equipment",
+            "status": "none"
+          },
+          {
+            "type": "supplies",
+            "status": "none"
+          },
+          {
+            "type": "spares",
+            "status": "none"
+          },
+          {
+            "type": "safety",
+            "status": "none"
+          }
+        ],
+        "actions": [],
+        "acceptanceCriteria": []
+      },
+      "sourceXPath": "/dmodule/content/procedure/preliminaryRqmts",
+      "sourceElementName": "preliminaryRqmts",
+      "fragmentRef": "6afbfeb2-2443-48d2-ab76-1492c344290b"
+    },
+    {
+      "blockId": "e6673d1e-5287-4d44-9cb9-5dcc358ae9e2",
+      "parentId": null,
+      "blockType": "note",
+      "text": "It is necessary to install the fork before installing the brakes",
+      "contextPath": [],
+      "sourceXPath": "/dmodule/content/procedure/mainProcedure/proceduralStep[1]/note",
+      "sourceElementName": "note",
+      "fragmentRef": "e6673d1e-5287-4d44-9cb9-5dcc358ae9e2"
+    },
+    {
+      "blockId": "7efce529-fb32-4312-a342-ebf899105b4c",
+      "parentId": null,
+      "blockType": "procedureStep",
+      "text": "Hold the front of the bicycle.",
+      "contextPath": [],
+      "level": 1,
+      "structuredContent": {
+        "conditions": [],
+        "actions": [],
+        "acceptanceCriteria": [],
+        "applicRefId": "app-0001",
+        "applicTree": {
+          "applicId": "app-0001",
+          "displayText": "Mountain bicycle and (Mountain storm Mk1 or Brook trekker Mk9)",
+          "evaluateTree": {
+            "type": "evaluate",
+            "andOr": "and",
+            "children": [
+              {
+                "type": "assert",
+                "ident": "type",
+                "propType": "prodattr",
+                "values": "Mountain bicycle"
+              },
+              {
+                "type": "evaluate",
+                "andOr": "or",
+                "children": [
+                  {
+                    "type": "evaluate",
+                    "andOr": "and",
+                    "children": [
+                      {
+                        "type": "assert",
+                        "ident": "model",
+                        "propType": "prodattr",
+                        "values": "Mountain storm"
+                      },
+                      {
+                        "type": "assert",
+                        "ident": "version",
+                        "propType": "prodattr",
+                        "values": "Mk1"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "evaluate",
+                    "andOr": "and",
+                    "children": [
+                      {
+                        "type": "assert",
+                        "ident": "model",
+                        "propType": "prodattr",
+                        "values": "Brook trekker"
+                      },
+                      {
+                        "type": "assert",
+                        "ident": "version",
+                        "propType": "prodattr",
+                        "values": "Mk9"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "sourceXPath": "/dmodule/content/procedure/mainProcedure/proceduralStep[2]",
+      "sourceElementName": "proceduralStep",
+      "fragmentRef": "7efce529-fb32-4312-a342-ebf899105b4c"
+    },
+    {
+      "blockId": "06fc7b30-4d47-4fba-9860-2a551a5d71e3",
+      "parentId": null,
+      "blockType": "procedureStep",
+      "text": "Install the front brakes on the fork.",
+      "contextPath": [],
+      "level": 1,
+      "structuredContent": {
+        "conditions": [],
+        "actions": [],
+        "acceptanceCriteria": [],
+        "applicRefId": "app-0001",
+        "applicTree": {
+          "applicId": "app-0001",
+          "displayText": "Mountain bicycle and (Mountain storm Mk1 or Brook trekker Mk9)",
+          "evaluateTree": {
+            "type": "evaluate",
+            "andOr": "and",
+            "children": [
+              {
+                "type": "assert",
+                "ident": "type",
+                "propType": "prodattr",
+                "values": "Mountain bicycle"
+              },
+              {
+                "type": "evaluate",
+                "andOr": "or",
+                "children": [
+                  {
+                    "type": "evaluate",
+                    "andOr": "and",
+                    "children": [
+                      {
+                        "type": "assert",
+                        "ident": "model",
+                        "propType": "prodattr",
+                        "values": "Mountain storm"
+                      },
+                      {
+                        "type": "assert",
+                        "ident": "version",
+                        "propType": "prodattr",
+                        "values": "Mk1"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "evaluate",
+                    "andOr": "and",
+                    "children": [
+                      {
+                        "type": "assert",
+                        "ident": "model",
+                        "propType": "prodattr",
+                        "values": "Brook trekker"
+                      },
+                      {
+                        "type": "assert",
+                        "ident": "version",
+                        "propType": "prodattr",
+                        "values": "Mk9"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "sourceXPath": "/dmodule/content/procedure/mainProcedure/proceduralStep[3]",
+      "sourceElementName": "proceduralStep",
+      "fragmentRef": "06fc7b30-4d47-4fba-9860-2a551a5d71e3"
+    },
+    {
+      "blockId": "fcc3c44d-8adf-4360-b4d4-5c6a5e3a3a2d",
+      "parentId": null,
+      "blockType": "procedureStep",
+      "text": "Put the frame on the floor.",
+      "contextPath": [],
+      "level": 1,
+      "structuredContent": {
+        "conditions": [],
+        "actions": [],
+        "acceptanceCriteria": [],
+        "applicRefId": "app-0001",
+        "applicTree": {
+          "applicId": "app-0001",
+          "displayText": "Mountain bicycle and (Mountain storm Mk1 or Brook trekker Mk9)",
+          "evaluateTree": {
+            "type": "evaluate",
+            "andOr": "and",
+            "children": [
+              {
+                "type": "assert",
+                "ident": "type",
+                "propType": "prodattr",
+                "values": "Mountain bicycle"
+              },
+              {
+                "type": "evaluate",
+                "andOr": "or",
+                "children": [
+                  {
+                    "type": "evaluate",
+                    "andOr": "and",
+                    "children": [
+                      {
+                        "type": "assert",
+                        "ident": "model",
+                        "propType": "prodattr",
+                        "values": "Mountain storm"
+                      },
+                      {
+                        "type": "assert",
+                        "ident": "version",
+                        "propType": "prodattr",
+                        "values": "Mk1"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "evaluate",
+                    "andOr": "and",
+                    "children": [
+                      {
+                        "type": "assert",
+                        "ident": "model",
+                        "propType": "prodattr",
+                        "values": "Brook trekker"
+                      },
+                      {
+                        "type": "assert",
+                        "ident": "version",
+                        "propType": "prodattr",
+                        "values": "Mk9"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "sourceXPath": "/dmodule/content/procedure/mainProcedure/proceduralStep[4]",
+      "sourceElementName": "proceduralStep",
+      "fragmentRef": "fcc3c44d-8adf-4360-b4d4-5c6a5e3a3a2d"
+    },
+    {
+      "blockId": "b2e7a3ee-dfed-4a4c-8d9c-3ab988282008",
+      "parentId": null,
+      "blockType": "section",
+      "text": "closeRqmts",
+      "contextPath": [],
+      "level": 1,
+      "structuredContent": {
+        "conditions": [
+          {
+            "type": "condition",
+            "status": "none"
+          }
+        ],
+        "actions": [],
+        "acceptanceCriteria": []
+      },
+      "sourceXPath": "/dmodule/content/procedure/closeRqmts",
+      "sourceElementName": "closeRqmts",
+      "fragmentRef": "b2e7a3ee-dfed-4a4c-8d9c-3ab988282008"
+    }
+  ],
+  "relations": [
+    {
+      "sourceBlockId": null,
+      "relationType": "custom:GOVERNED_BY_APPLIC",
+      "target": "DMC-S1000DBIKE-AAA-D00-00-00-00AA-00WA-D",
+      "confidence": 1.0
+    },
+    {
+      "sourceBlockId": null,
+      "relationType": "custom:COMPLIES_WITH",
+      "target": "DMC-S1000DBIKE-AAA-D00-00-00-00AA-022A-D",
+      "confidence": 1.0
+    }
+  ]
+}

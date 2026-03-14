@@ -70,6 +70,12 @@ def s1000d_xml_file(tmp_path: Path) -> Path:
             </dmAddress>
             <dmStatus issueType="new">
                 <skillLevel skillLevelCode="sk01"/>
+                <applic id="app-0001">
+                    <displayText><simplePara>Test Applic</simplePara></displayText>
+                    <evaluate andOr="and">
+                        <assert applicPropertyIdent="type" applicPropertyType="prodattr" applicPropertyValues="Bike"/>
+                    </evaluate>
+                </applic>
                 <qualityAssurance>
                     <firstVerification verificationType="tabtop"/>
                 </qualityAssurance>
@@ -92,10 +98,10 @@ def s1000d_xml_file(tmp_path: Path) -> Path:
                         <title>Removal of Wheel</title>
                         <warning>Always wear safety goggles.</warning>
                         <note><notePara>Ensure the bike is on a stand.</notePara></note>
-                        <proceduralStep>
+                        <proceduralStep applicRefId="app-0001">
                             <note><notePara>This is an empty step note.</notePara></note>
                         </proceduralStep>
-                        <proceduralStep>
+                        <proceduralStep applicRefId="app-0001">
                             <reqCondNo id="rc1">Release pressure</reqCondNo>
                             <supportEquipDescr>Wrench</supportEquipDescr>
                             <para>Use wrench to loosen the bolt.</para>
@@ -151,6 +157,9 @@ def test_s1000d_parsing(s1000d_xml_file: Path):
     title_block = blocks[0]
     assert title_block.block_type == "title"
     assert title_block.text == "Bicycle - Maintenance"
+    # Phase 2 dmCode
+    assert "s1000d_dmCode" in title_block.structured_content
+    assert title_block.structured_content["s1000d_dmCode"]["modelIdentCode"] == "BIKE"
 
     prelim_block = blocks[1]
     assert prelim_block.block_type == "section"
@@ -186,6 +195,19 @@ def test_s1000d_parsing(s1000d_xml_file: Path):
     assert step.structured_content is not None
     conditions = step.structured_content["conditions"]
     assert len(conditions) == 2
+
+    # Phase 1 applicRefId and applicTree resolution
+    assert step.structured_content.get("applicRefId") == "app-0001"
+    assert "applicTree" in step.structured_content
+    assert step.structured_content["applicTree"]["applicId"] == "app-0001"
+    assert step.structured_content["applicTree"]["evaluateTree"]["type"] == "evaluate"
+
+    # Phase 1 sourceXPath mapping
+    assert step.source_xpath is not None and "proceduralStep" in step.source_xpath
+    assert step.source_element_name.lower() == "proceduralstep"
+
+    # Phase 3 xml fragment
+    assert step.xml_fragment is not None and "<proceduralStep" in step.xml_fragment
 
 
 def test_s1000d_metadata_extraction(s1000d_xml_file: Path):
