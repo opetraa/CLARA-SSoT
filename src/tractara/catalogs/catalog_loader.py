@@ -2,7 +2,7 @@
 # src/tractara/catalogs/catalog_loader.py
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import yaml
 
@@ -15,7 +15,6 @@ _BASE_CATALOG: Dict[str, Any] = {}
 
 def load_all_catalogs() -> None:
     """_CATALOG_DIR 내의 모든 yaml 파일을 로드하여 메모리에 저장합니다."""
-    global _BASE_CATALOG, _LOADED_CATALOGS
 
     if _LOADED_CATALOGS:
         return  # Already loaded
@@ -30,11 +29,12 @@ def load_all_catalogs() -> None:
 
             format_id = data["format_id"]
             if format_id == "_base":
-                _BASE_CATALOG = data
+                _BASE_CATALOG.clear()
+                _BASE_CATALOG.update(data)
             else:
                 _LOADED_CATALOGS[format_id] = data
 
-        except Exception as e:
+        except (yaml.YAMLError, OSError) as e:
             logger.error("Failed to load catalog %s: %s", yaml_file.name, e)
 
 
@@ -52,7 +52,7 @@ def detect_catalog(root_tag: str) -> Optional[Dict[str, Any]]:
 
     root_tag_lower = root_tag.lower()
 
-    for format_id, config in _LOADED_CATALOGS.items():
+    for _, config in _LOADED_CATALOGS.items():
         detect_cfg = config.get("detect", {})
         root_contains = detect_cfg.get("root_tag_contains")
 
