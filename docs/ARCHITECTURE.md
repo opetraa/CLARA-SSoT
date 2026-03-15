@@ -14,10 +14,15 @@ src/tractara/
 ├── normalization/
 │   ├── doc_mapper.py            # 원시 파싱 결과 → DOC Baseline JSON
 │   └── term_mapper.py           # 원시 파싱 결과 → TERM 후보 리스트
+├── ontology/
+│   ├── term_ontology.py         # TERM-CLASS/REL OWL 매핑
+│   ├── term_rules.py            # TERM-RULE SWRL 변환 및 추론기 실행
+│   └── rdf_serializer.py        # RDF 변환 및 시스템 외부 연동
 ├── landing/
 │   └── landing_repository.py   # Landing Zone 저장 (로우 JSON)
 ├── validation/
 │   ├── json_schema_validator.py # DOC/TERM JSON Schema 검증
+│   ├── shacl_validator.py       # pySHACL 기반 TERM 시맨틱 무결성 검증
 │   └── term_validator.py        # TERM 승격 가능 여부 검증
 ├── curation/
 │   └── term_curation_service.py # TERM 후보 병합 및 중복 제거
@@ -66,6 +71,11 @@ PDF 파일 입력
     ▼
 [ssot] doc_ssot_repository.py  → src/data/ssot/docs/
        term_ssot_repository.py → src/data/ssot/terms/
+    │
+    ▼
+[ontology] api/ontology_router.py (수동 호출)
+    │  POST /ontology/load   → SSoT TERM 읽어서 OWL 매핑
+    │  POST /ontology/reason → Pellet 추론기 실행하여 인과관계 연역
 ```
 
 ## 저장소 구조

@@ -4,18 +4,18 @@
   "termType": "TERM-CLASS",
   "term": "Front brake",
   "lang": "bilingual",
-  "headword_en": "Front brake",
+  "headword_en": "Front Brake",
   "headword_ko": "전륜 브레이크",
-  "definition_en": "A braking mechanism located on the front wheels of a vehicle, responsible for a significant portion of the total stopping power.",
-  "definition_ko": "차량의 앞바퀴에 위치한 제동 장치로, 전체 제동력의 상당 부분을 담당함.",
+  "definition_en": "A braking mechanism located at the front of a vehicle used to decelerate or stop the front wheels.",
+  "definition_ko": "차량의 앞부분에 위치하여 앞바퀴를 감속하거나 정지시키는 데 사용되는 제동 장치.",
   "slots": {
     "context_ko": "Front brake - Install procedures"
   },
   "examples": [],
   "negatives": [],
   "domain": [
-    "mechanical",
-    "automotive"
+    "automotive",
+    "mechanical"
   ],
   "relatedTerms": [],
   "relations": [],
@@ -23,11 +23,11 @@
   "provenance": {
     "sources": [
       {
-        "docId": "DOC_037404b593334c9db00bd34e68cf8bc1"
+        "docId": "DOC_30c43ed768144cf887fed98b2c82e9f0"
       }
     ],
     "curationStatus": "candidate",
-    "trace_id": "0affec376d4c4d8b9b564220f4ef7708"
+    "trace_id": "e4170c9fbd3047f69a011254560b264b"
   },
   "status": "candidate"
 }

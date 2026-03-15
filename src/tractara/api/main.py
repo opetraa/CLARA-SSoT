@@ -17,6 +17,7 @@ from ..validation.json_schema_validator import (
     SchemaValidationException,
     schema_registry,
 )
+from . import ontology_router
 from .pipeline import ingest_single_document
 
 load_dotenv()  # .env 파일 로드
@@ -24,6 +25,8 @@ load_dotenv()  # .env 파일 로드
 
 logger = logging.getLogger(__name__)
 app = FastAPI(title="Tractara Ingestion API")
+
+app.include_router(ontology_router.router)
 
 
 @app.on_event("startup")

@@ -1,0 +1,34 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix term: <http://tractara.org/ontology/term#> .
+
+term:TermClassShape a sh:NodeShape ;
+    sh:targetClass owl:Class ;
+    
+    # 영어 정의 필수 검증
+    sh:property [
+        sh:path term:definition_en ;
+        sh:minCount 1 ;
+        sh:datatype rdf:langString ;
+        sh:message "TERM-CLASS must have an English definition." ;
+        sh:severity sh:Violation ;
+    ] ;
+    
+    # 한국어 정의 필수 검증
+    sh:property [
+        sh:path term:definition_ko ;
+        sh:minCount 1 ;
+        sh:datatype rdf:langString ;
+        sh:message "TERM-CLASS must have a Korean definition." ;
+        sh:severity sh:Violation ;
+    ] ;
+
+    # 부정 키워드 형식이 문자열인지 검증
+    sh:property [
+        sh:path term:negativeKeyword ;
+        sh:datatype xsd:string ;
+        sh:message "Negative keywords must be strings." ;
+    ] .

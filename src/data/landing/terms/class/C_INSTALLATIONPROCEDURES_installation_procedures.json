@@ -4,18 +4,18 @@
   "termType": "TERM-CLASS",
   "term": "Install procedures",
   "lang": "bilingual",
-  "headword_en": "Installation procedures",
-  "headword_ko": "설치 절차",
-  "definition_en": "A set of standardized, step-by-step instructions for correctly assembling or fitting a component into its designated place.",
-  "definition_ko": "부품을 지정된 위치에 올바르게 조립하거나 장착하기 위한 표준화된 단계별 지침.",
+  "headword_en": "Installation Procedures",
+  "headword_ko": "설치 절차 / 장착 절차",
+  "definition_en": "A documented set of steps or instructions for correctly assembling and securing a part or system into its functional position.",
+  "definition_ko": "부품이나 시스템을 기능적 위치에 올바르게 조립하고 고정하기 위한 문서화된 단계 또는 지침.",
   "slots": {
     "context_ko": "Front brake - Install procedures"
   },
   "examples": [],
   "negatives": [],
   "domain": [
-    "maintenance",
-    "engineering"
+    "mechanical",
+    "maintenance"
   ],
   "relatedTerms": [],
   "relations": [],
@@ -23,11 +23,11 @@
   "provenance": {
     "sources": [
       {
-        "docId": "DOC_037404b593334c9db00bd34e68cf8bc1"
+        "docId": "DOC_30c43ed768144cf887fed98b2c82e9f0"
       }
     ],
     "curationStatus": "candidate",
-    "trace_id": "0affec376d4c4d8b9b564220f4ef7708"
+    "trace_id": "e4170c9fbd3047f69a011254560b264b"
   },
   "status": "candidate"
 }

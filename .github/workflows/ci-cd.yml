@@ -18,6 +18,11 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-11-jre-headless
+
       - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 -

@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     libxslt-dev \
     tesseract-ocr \
     tesseract-ocr-kor \
+    openjdk-11-jre-headless \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

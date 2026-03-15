@@ -2,7 +2,7 @@
 # src/tractara/ssot/term_ssot_repository.py
 import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 SSOT_TERM_DIR = BASE_DIR / "data" / "ssot" / "terms"
@@ -44,3 +44,50 @@ def upsert_terms(terms: List[Dict[str, Any]]) -> None:
         path.write_text(
             json.dumps(term, ensure_ascii=False, indent=2), encoding="utf-8"
         )
+
+
+def get_all_terms(
+    *,
+    term_type: Optional[str] = None,
+    limit: int = 0,
+    offset: int = 0,
+) -> List[Dict[str, Any]]:
+    """
+    SSoT에 저장된 TERM JSON을 로드하여 반환합니다.
+
+    Args:
+        term_type: 필터링할 termType ("TERM-CLASS", "TERM-REL", "TERM-RULE").
+                   None이면 전체 로드.
+        limit: 반환할 최대 개수. 0이면 제한 없음.
+        offset: 건너뛸 항목 수. limit과 함께 사용하여 배치 로딩 가능.
+
+    Returns:
+        TERM JSON 딕셔너리 리스트
+    """
+    terms: List[Dict[str, Any]] = []
+    if not SSOT_TERM_DIR.exists():
+        return terms
+
+    # term_type이 지정되면 해당 서브디렉토리만 탐색
+    if term_type and term_type in _TYPE_SUBDIR:
+        search_dir = SSOT_TERM_DIR / _TYPE_SUBDIR[term_type]
+        if not search_dir.exists():
+            return terms
+        file_iter = search_dir.glob("*.json")
+    else:
+        file_iter = SSOT_TERM_DIR.rglob("*.json")
+
+    for file_path in sorted(file_iter):
+        try:
+            with file_path.open("r", encoding="utf-8") as f:
+                terms.append(json.load(f))
+        except (OSError, ValueError):
+            pass
+
+    # offset/limit 적용
+    if offset > 0:
+        terms = terms[offset:]
+    if limit > 0:
+        terms = terms[:limit]
+
+    return terms
