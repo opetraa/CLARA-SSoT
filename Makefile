@@ -24,7 +24,7 @@ help:
 	@echo "  make dvc-add-push file=\"...\" - Add a large file to DVC and push"
 	@echo ""
 	@echo "  make sync-all m=\"...\" - (RECOMMENDED) Add all changes to DVC/Git and push"
-	@echo "  make sync-rules       - AI 규칙 동기화 (.ai-rules/ → CLAUDE.md, GEMINI.md)"
+	@echo "  make sync-rules       - AI 규칙 동기화 (.ai-rules/AGENTS.md → CLAUDE.md, GEMINI.md)"
 
 install:
 	poetry install

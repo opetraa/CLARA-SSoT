@@ -1,6 +1,6 @@
 """AI 규칙 동기화 스크립트.
 
-.ai-rules/main.md + .ai-rules/{tool}/overrides.md → CLAUDE.md, GEMINI.md
+.ai-rules/AGENTS.md → CLAUDE.md, GEMINI.md
 
 stdlib만 사용 — poetry 환경 불필요.
 사용법:
@@ -19,14 +19,14 @@ TOOLS: dict[str, str] = {
 
 HEADER_TEMPLATE = """\
 <!-- ⚠️  자동 생성 파일 — 직접 편집하지 마세요.
-     원본: .ai-rules/main.md + .ai-rules/{tool}/overrides.md
+     원본: .ai-rules/AGENTS.md
      수정 방법: 해당 파일을 편집한 뒤 `make sync-rules` 실행 -->
 
 """
 
 
 def sync() -> None:
-    main_path = ROOT / ".ai-rules" / "main.md"
+    main_path = ROOT / ".ai-rules" / "AGENTS.md"
     if not main_path.exists():
         print(f"ERROR: {main_path} not found", file=sys.stderr)
         sys.exit(1)
@@ -35,14 +35,7 @@ def sync() -> None:
     changed: list[str] = []
 
     for tool, output_filename in TOOLS.items():
-        overrides_path = ROOT / ".ai-rules" / tool / "overrides.md"
-        if not overrides_path.exists():
-            print(f"ERROR: {overrides_path} not found", file=sys.stderr)
-            sys.exit(1)
-
-        overrides_content = overrides_path.read_text(encoding="utf-8")
-        header = HEADER_TEMPLATE.replace("{tool}", tool)
-        new_content = header + main_content.rstrip("\n") + "\n\n" + overrides_content
+        new_content = HEADER_TEMPLATE + main_content
 
         output_path = ROOT / output_filename
         if output_path.exists() and output_path.read_text(encoding="utf-8") == new_content:
