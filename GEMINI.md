@@ -62,3 +62,26 @@ make sync-rules   # AI 규칙 동기화 (.ai-rules/ → CLAUDE.md, GEMINI.md)
 
 # 참고 문서
 docs/ARCHITECTURE.md 와 docs/DESIGN.md를 항상 참고하세요.
+
+# 아키텍처 헌법 (Architecture Constitution)
+
+아래 규칙은 AI 에이전트가 코드를 수정할 때 **절대 위반해서는 안 되는** 불변식입니다.
+위반 시 pytest가 fail 하도록 `tests/test_golden_s1000d.py`와 `tests/test_schema_gatekeeper.py`에 대응하는 테스트가 존재합니다.
+AI는 `make test`를 실행하여 모든 테스트가 통과(All Pass)할 때까지 코드를 수정해야 합니다.
+
+## 금지 규칙 (MUST NOT)
+1. `extensions` 필드에 데이터를 넣지 마라 — 스키마에서 제거됨
+2. 스키마에 정의되지 않은 새로운 최상위 필드를 추가하지 마라 (`additionalProperties: false`)
+3. `<note>` 태그를 `paragraph`로 매핑하지 마라 — 반드시 `blockType: "note"`
+4. `<warning>` 태그를 `paragraph`로 매핑하지 마라 — 반드시 `blockType: "warning"`
+5. `<caution>` 태그를 `paragraph`로 매핑하지 마라 — 반드시 `blockType: "caution"`
+6. 빈 `<proceduralStep>`(텍스트/조건/액션 없음)은 블록으로 생성하지 마라
+
+## 매핑 규칙 (MUST)
+7. `structuredContent` 내 허용 키: `conditions`, `actions`, `acceptanceCriteria`, `applicTree`, `applicRefId`, `s1000d_dmCode`
+8. `relationType`은 스키마 enum 또는 `custom:` 접두사 필수
+9. `dc:language`는 BCP-47 형식 (예: `en`, `ko`, `en-US`)
+10. 모든 `parentId`는 동일 문서 내 유효한 `blockId`를 참조해야 함
+
+# 참고 문서
+docs/ARCHITECTURE.md 와 docs/DESIGN.md를 항상 참고하세요.

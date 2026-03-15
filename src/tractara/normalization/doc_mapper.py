@@ -33,7 +33,9 @@ _VALID_BLOCK_TYPES = {
 }
 
 
-def _blocks_to_content(blocks: List[ParsedBlock]) -> List[Dict[str, Any]]:
+def _blocks_to_content(
+    blocks: List[ParsedBlock], has_fragments: bool = False
+) -> List[Dict[str, Any]]:
     """
     ParsedBlock 리스트 → DOC content 배열 변환.
 
@@ -89,6 +91,16 @@ def _blocks_to_content(blocks: List[ParsedBlock]) -> List[Dict[str, Any]]:
         if hasattr(b, "structured_content") and b.structured_content:
             item["structuredContent"] = b.structured_content
 
+        # 추적성 필드 추가
+        if hasattr(b, "source_xpath") and b.source_xpath:
+            item["sourceXPath"] = b.source_xpath
+        if hasattr(b, "source_element_name") and b.source_element_name:
+            item["sourceElementName"] = b.source_element_name
+
+        # Fragment Store 포인터 추가
+        if has_fragments and hasattr(b, "xml_fragment") and b.xml_fragment:
+            item["fragmentRef"] = item["blockId"]
+
         content.append(item)
 
     return content
@@ -137,6 +149,17 @@ def build_doc_baseline(parsed: ParsedDocument) -> Dict[str, Any]:
         status_map = {"new": "draft", "changed": "partial", "deleted": "deprecated"}
         val_status = status_map.get(extracted.doc_status.lower(), "validated")
 
+    source_xpath_mapping = []
+    fragments_to_save = {}
+    for i, b in enumerate(parsed.blocks, start=1):
+        b_id = b.block_id or f"block-{i:04d}"
+        if hasattr(b, "source_xpath") and b.source_xpath:
+            source_xpath_mapping.append(
+                {"blockId": b_id, "sourceXPath": b.source_xpath}
+            )
+        if hasattr(b, "xml_fragment") and b.xml_fragment:
+            fragments_to_save[b_id] = b.xml_fragment
+
     doc: Dict[str, Any] = {
         "documentId": doc_id,
         "$schema": "https://tractara.org/schemas/doc-baseline/v1.0.0",
@@ -155,9 +178,23 @@ def build_doc_baseline(parsed: ParsedDocument) -> Dict[str, Any]:
             },
             "validationStatus": val_status,
             "curationHistory": [],
+            "sourceXPathMapping": source_xpath_mapping,
         },
-        "content": _blocks_to_content(parsed.blocks),
+        "content": _blocks_to_content(
+            parsed.blocks, has_fragments=bool(fragments_to_save)
+        ),
     }
+
+    if fragments_to_save:
+        try:
+            from ..ssot.fragment_store import FileFragmentStore
+
+            store_dir = Path("src/data/landing/fragments")
+            store = FileFragmentStore(store_dir)
+            store.bulk_put(fragments_to_save)
+        except Exception:  # pylint: disable=broad-exception-caught
+            # Handle store init loosely if running in simple test mode without dir access
+            pass
 
     if hasattr(parsed, "relations") and parsed.relations:
         doc["relations"] = parsed.relations

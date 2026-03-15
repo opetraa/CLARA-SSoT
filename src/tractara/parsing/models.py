@@ -45,7 +45,11 @@ class ParsedBlock:
     section_label: Optional[str] = None  # 예: "1.2.3", "제2장"
     section_title: Optional[str] = None  # 번호 이후 제목 텍스트
     # 절차서 등에서 추출된 구조화된 엔지니어링 조건/파라미터 (schemas DOC_baseline 참조)
-    structured_content: Optional[Dict[str, List[Dict[str, Any]]]] = None
+    structured_content: Optional[Dict[str, Any]] = None
+    # 추적성 필드 (Phase 1, 3)
+    source_xpath: Optional[str] = None
+    source_element_name: Optional[str] = None
+    xml_fragment: Optional[str] = None
 
 
 @dataclass
@@ -57,3 +61,5 @@ class ParsedDocument:
     metadata: Optional[Dict] = None
     # 문서 전체의 교차 참조 정보 (sourceBlockId, relationType, target 등을 담음)
     relations: List[Dict[str, Any]] = field(default_factory=list)
+    # Fragment Store 저장을 위한 원본 XML 조각들 (block_id -> xml_string)
+    xml_fragments: Dict[str, str] = field(default_factory=dict)

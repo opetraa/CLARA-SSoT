@@ -490,6 +490,17 @@
               }
             }
           }
+        },
+        "sourceXPathMapping": {
+          "type": "array",
+          "description": "blockId와 원본 XML XPath 매핑",
+          "items": {
+            "type": "object",
+            "properties": {
+              "blockId": { "type": "string" },
+              "sourceXPath": { "type": "string" }
+            }
+          }
         }
       }
     },
@@ -504,6 +515,18 @@
           "text"
         ],
         "properties": {
+          "sourceXPath": {
+            "type": "string",
+            "description": "원본 XML에서의 XPath"
+          },
+          "sourceElementName": {
+            "type": "string",
+            "description": "원본 XML에서의 요소명(태그명)"
+          },
+          "fragmentRef": {
+            "type": "string",
+            "description": "Fragment Store의 XML 원조각 포인터"
+          },
           "blockId": {
             "type": "string",
             "description": "블록의 고유 식별자 (문서 내 상대 ID)",
@@ -668,6 +691,15 @@
                     "parameters": { "type": "object" }
                   }
                 }
+              },
+              "applicTree": {
+                "type": "object",
+                "description": "S1000D applic 구조 트리 (evaluate/assert)"
+              },
+              "s1000d_dmCode": {
+                "type": "object",
+                "description": "S1000D dmCode 원본 속성들",
+                "additionalProperties": true
               }
             }
           },
@@ -959,11 +991,6 @@
           }
         }
       }
-    },
-    "extensions": {
-      "type": "object",
-      "description": "도메인 특화 확장 필드 (유연성 제공)",
-      "additionalProperties": true
     }
   },
   "additionalProperties": false

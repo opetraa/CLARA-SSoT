@@ -66,6 +66,30 @@ class CatalogDrivenStrategy:
                 for t in tags:
                     self.content_rules[t.lower()] = mapping
 
+    def _get_tracking_info(self, element: Any) -> Dict[str, Any]:
+        info = {
+            "source_xpath": None,
+            "source_element_name": element.tag
+            if hasattr(element, "tag") and isinstance(element.tag, str)
+            else None,
+            "xml_fragment": None,
+        }
+        try:
+            if hasattr(element, "getroottree"):
+                info["source_xpath"] = element.getroottree().getpath(element)
+        except Exception:  # pylint: disable=broad-exception-caught
+            pass
+        try:
+            if info["source_element_name"]:
+                info[
+                    "xml_fragment"
+                ] = etree.tostring(  # pylint: disable=c-extension-no-member
+                    element, encoding="unicode"
+                )
+        except Exception:  # pylint: disable=broad-exception-caught
+            pass
+        return info
+
     def parse(self, root: Any, source_path: str) -> ParsedDocument:
         blocks: List[ParsedBlock] = []
         relations: List[Dict[str, Any]] = []
@@ -98,14 +122,23 @@ class CatalogDrivenStrategy:
             else:
                 title_text = text_val
 
-        if title_text:
+        dmcode_fields: Any = {}
+        if self.format_id == "s1000d":
+            dmc_func = TRANSFORM_REGISTRY.get("dmc_raw_fields")
+            dmcode_el = root.find(".//dmIdent")
+            if dmcode_el is not None and dmc_func:
+                dmcode_fields = dmc_func(dmcode_el)
+
+        if title_text or dmcode_fields:
+            sc = {"s1000d_dmCode": dmcode_fields} if dmcode_fields else None
             blocks.append(
                 ParsedBlock(
                     page=1,
                     block_type="title",
-                    text=title_text,
+                    text=title_text or "Untitled",
                     level=0,
                     block_id=str(uuid.uuid4()),
+                    structured_content=sc,
                 )
             )
 
@@ -184,6 +217,7 @@ class CatalogDrivenStrategy:
                             level=1,
                             block_id=str(uuid.uuid4()),
                             structured_content=structured,
+                            **self._get_tracking_info(rqmts_el),
                         )
                     )
                 self._traverse_node(
@@ -201,6 +235,7 @@ class CatalogDrivenStrategy:
                             level=1,
                             block_id=str(uuid.uuid4()),
                             structured_content=structured,
+                            **self._get_tracking_info(rqmts_el),
                         )
                     )
 
@@ -259,6 +294,7 @@ class CatalogDrivenStrategy:
                         section_label=label,
                         section_title=title or sec_title,
                         block_id=block_id,
+                        **self._get_tracking_info(child),
                     )
                     blocks.append(sec_block)
 
@@ -291,6 +327,7 @@ class CatalogDrivenStrategy:
                             parent_id=parent_id,
                             context_path=current_context,
                             block_id=block_id,
+                            **self._get_tracking_info(child),
                         )
                     )
 
@@ -326,6 +363,7 @@ class CatalogDrivenStrategy:
                             context_path=current_context,
                             block_id=str(uuid.uuid4()),
                             equation_data=eq_data,
+                            **self._get_tracking_info(child),
                         )
                     )
             else:
@@ -352,7 +390,7 @@ class CatalogDrivenStrategy:
         # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-branches,too-many-statements
         """절차 단계 파싱 (S1000D 특화 로직 유지, 중첩 및 분리 파싱)"""
         text_parts = []
-        structured_content: Dict[str, List] = {
+        structured_content: Dict[str, Any] = {
             "conditions": [],
             "actions": [],
             "acceptanceCriteria": [],
@@ -378,6 +416,7 @@ class CatalogDrivenStrategy:
                             parent_id=step_id,
                             context_path=context_path,
                             block_id=str(uuid.uuid4()),
+                            **self._get_tracking_info(child),
                         )
                     )
             elif tag in ("warning", "caution"):
@@ -391,6 +430,7 @@ class CatalogDrivenStrategy:
                             parent_id=step_id,
                             context_path=context_path,
                             block_id=str(uuid.uuid4()),
+                            **self._get_tracking_info(child),
                         )
                     )
             elif tag == "proceduralstep":
@@ -440,6 +480,19 @@ class CatalogDrivenStrategy:
         applic_ref = step_el.get("applicRefId")
         if applic_ref:
             structured_content["applicRefId"] = applic_ref
+            root = (
+                step_el.getroottree().getroot()
+                if hasattr(step_el, "getroottree")
+                else None
+            )
+            if root is not None:
+                applic_el = root.find(f".//applic[@id='{applic_ref}']")
+                if applic_el is not None:
+                    from tractara.catalogs.transforms import TRANSFORM_REGISTRY
+
+                    applic_func = TRANSFORM_REGISTRY.get("applic_tree")
+                    if applic_func:
+                        structured_content["applicTree"] = applic_func(applic_el)
 
         has_substance = (
             bool(full_text)
@@ -459,6 +512,7 @@ class CatalogDrivenStrategy:
                 context_path=context_path,
                 block_id=step_id,
                 level=level,
+                **self._get_tracking_info(step_el),
             )
             step_block.structured_content = structured_content
 
